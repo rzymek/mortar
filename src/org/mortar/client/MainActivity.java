@@ -1,0 +1,42 @@
+package org.mortar.client;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.widget.Toast;
+
+public class MainActivity extends ActionBarActivity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		Intent intent = getIntent();
+		if (intent.getIntExtra("CMD", 0) == ListenerService.CMD_EXIT) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Mortar Client");
+			builder.setMessage("Exit?");
+			builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface arg0, int arg1) {
+					Toast.makeText(getApplicationContext(), "MortarClient: exit", Toast.LENGTH_SHORT).show();
+					stopService(new Intent(MainActivity.this, ListenerService.class));
+					finish();
+				}
+			});
+			builder.setNegativeButton(android.R.string.cancel, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					finish();
+				}
+			});
+			builder.create().show();
+		} else {
+			Toast.makeText(getApplicationContext(), "MortarClient: started", Toast.LENGTH_SHORT).show();
+			startService(new Intent(this, ListenerService.class));
+			finish();
+		}
+	}
+}
