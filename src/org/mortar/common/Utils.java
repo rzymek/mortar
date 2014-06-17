@@ -1,4 +1,4 @@
-package org.mortar.utils;
+package org.mortar.common;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

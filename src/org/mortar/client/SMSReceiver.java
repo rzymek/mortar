@@ -3,13 +3,13 @@ package org.mortar.client;
 import java.io.IOException;
 import java.util.Set;
 
-import org.mortar.utils.AttackSerializer;
-import org.mortar.utils.Utils;
+import org.mortar.client.data.MergedMessage;
+import org.mortar.common.MortarMessage;
+import org.mortar.common.Utils;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 
 public class SMSReceiver extends BroadcastReceiver {
@@ -18,10 +18,17 @@ public class SMSReceiver extends BroadcastReceiver {
 		Bundle bundle = intent.getExtras();
 		if (bundle != null) {
 			try {
-				Message msg = Message.createFromBundle(bundle);
+				MergedMessage msg = MergedMessage.createFromBundle(bundle);
 				App app = (App) context;
-				Location location = AttackSerializer.read(msg.contents);
-				app.explosionEvent(location, msg.from);
+				MortarMessage info = MortarMessage.deserialize(msg.contents);
+				switch(info.type) {
+				case EXPLOSION:
+					app.explosionEvent(info.location, msg.from);
+					break;
+				case PREPARE:
+					context.startService(new Intent(context, ListenerService.class));
+					break;
+				}
 			} catch (IOException ex) {
 				Utils.handle(ex, context);
 			}
