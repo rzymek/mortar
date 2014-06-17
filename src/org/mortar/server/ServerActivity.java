@@ -119,22 +119,37 @@ public class ServerActivity extends Activity {
 		String number = data.getStringExtra("number");
 		switch(requestCode) {
 		case RC_SENT:
-			clientStatus.put(number, "sent("+resultCode+")");
+			clientStatus.put(number, clientStatus.get(number)+" sent("+resultCodeDesc(resultCode)+")");
 			break;
 		case RC_DELIVERY_REPORT:
 			byte[] pdu = data.getByteArrayExtra("pdu");
+			String body="";
 			if(pdu != null) {
 				SmsMessage reportSms = SmsMessage.createFromPdu(pdu);
-				String body = reportSms.getMessageBody();
-				clientStatus.put(number, "delivered("+resultCode+"):"+body);
-			}else{
-				clientStatus.put(number, "delivered("+resultCode+")");
+				body = reportSms.getMessageBody();
 			}
+			clientStatus.put(number, clientStatus.get(number)+" delivered("+resultCodeDesc(resultCode)+"):"+body);
 			break;
 		default:
 			return;
 		}
 		updateStatus();
+	}
+
+	private String resultCodeDesc(int resultCode) {
+		switch (resultCode) {
+		case RESULT_OK:
+			return "OK";
+		case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+			return "GENERIC_FAILURE";
+		case SmsManager.RESULT_ERROR_NO_SERVICE:
+			return "NO_SERVICE";
+		case SmsManager.RESULT_ERROR_NULL_PDU:
+			return "NULL_PDU";
+		case SmsManager.RESULT_ERROR_RADIO_OFF:
+			return "RADIO_OFF";
+		}
+		return "" + resultCode;
 	}
 
 	private void updateStatus() {
@@ -151,14 +166,14 @@ public class ServerActivity extends Activity {
 			final MortarMessage message = createMortarMessage();
 			final byte[] userData = message.serialize();
 			for (String phone: clients) {
+				clientStatus.put(phone, "sending");
+				updateStatus();
 				Intent data = new Intent();
 				data.putExtra("number", phone);
 				PendingIntent sent = createPendingResult(RC_SENT, data, PendingIntent.FLAG_UPDATE_CURRENT);
 				PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data, PendingIntent.FLAG_UPDATE_CURRENT);
 				short smsPort = (short) R.integer.sms_port;
 				smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
-				clientStatus.put(phone, "sending");
-				updateStatus();
 			}
 		}catch(Exception ex){
 			Utils.handle(ex, this);

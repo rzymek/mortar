@@ -1,7 +1,6 @@
 package org.mortar.client;
 
 import java.io.IOException;
-import java.util.Set;
 
 import org.mortar.client.data.MergedMessage;
 import org.mortar.common.MortarMessage;
@@ -34,21 +33,4 @@ public class SMSReceiver extends BroadcastReceiver {
 			}
 		}
 	}
-
-	public static String getExtras(Intent intent) {
-		if (intent == null) {
-			return "intent==null";
-		}
-		Bundle extras = intent.getExtras();
-		if (extras == null) {
-			return "extras==null";
-		}
-		Set<String> keySet = extras.keySet();
-		String s = "";
-		for (String key : keySet) {
-			s += key + ":" + extras.get(key) + "\n";
-		}
-		return s;
-	}
-
 }
