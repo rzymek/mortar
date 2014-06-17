@@ -28,7 +28,8 @@ public class InfoActivity extends Activity {
 			}
 		});
 		vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-		player = MediaPlayer.create(this, R.raw.beep);
+		player = MediaPlayer.create(this, R.raw.beep_long);
+		player.setLooping(true);
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		
 		start();
@@ -41,7 +42,6 @@ public class InfoActivity extends Activity {
 				300
 		};
 		vibrator.vibrate(pattern, 0);
-		player.setLooping(true);
 		player.start();
 		userVolume = audioManager.getStreamVolume(STREAM);
 		int maxVolume = audioManager.getStreamMaxVolume(STREAM);
