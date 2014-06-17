@@ -30,6 +30,11 @@ public class MainActivity extends Activity {
 			builder.setNegativeButton(android.R.string.cancel, new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
+					Intent result = new Intent(thiz, InfoActivity.class);
+					result.putExtra(InfoActivity.Key.MESSAGE.name(), "KIA");
+					result.putExtra(InfoActivity.Key.FROM.name(), "");
+					result.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					thiz.startActivity(result);
 					finish();
 				}
 			});

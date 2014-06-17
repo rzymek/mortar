@@ -25,6 +25,7 @@ public class SMSReceiver extends BroadcastReceiver {
 				if (from == null) {
 					from = msg.getOriginatingAddress();
 				}
+				long timestamp = msg.getTimestampMillis();
 			}
 
 			Intent result = new Intent(context, InfoActivity.class);
