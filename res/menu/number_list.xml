@@ -4,9 +4,10 @@
     tools:context="org.mortar.client.MainActivity" >
 
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never"/>
+        android:id="@+id/number_list_save"
+        android:orderInCategory="100" 
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="Save"
+        app:showAsAction="always"/>
 
 </menu>

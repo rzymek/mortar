@@ -22,4 +22,8 @@ public class Utils {
 		Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
 	}
 
+	public static void toast(String string, Context ctx) {
+		Toast.makeText(ctx, string, Toast.LENGTH_LONG).show();
+	}
+
 }
