@@ -1,6 +1,7 @@
 package org.mortar.client;
 
 import org.mortar.client.activities.InfoActivity;
+import org.mortar.common.MortarMessage;
 
 import android.app.Application;
 import android.content.Intent;
@@ -8,31 +9,30 @@ import android.location.Location;
 
 public class App extends Application {
 
-	private static final float KILL_ZONE = 30;
-	private static final float OBSERVE_ZONE = 300;
 	private static final long TIMEOUT = 7 * 60 * 1000;
 	private Location currentBestLocation;
-	private Location explosionAt;
+	private MortarMessage explosion;
 
 	private void checkDistance() {
-		if (currentBestLocation == null || explosionAt == null) {
+		if (currentBestLocation == null || explosion == null) {
 			return;
 		}
-		if (Math.abs(currentBestLocation.getTime() - explosionAt.getTime()) > TIMEOUT) {
+		if (Math.abs(currentBestLocation.getTime() - explosion.location.getTime()) > TIMEOUT) {
 			return;
 		}
-		float distance = currentBestLocation.distanceTo(explosionAt);
-		if (distance < KILL_ZONE) {
+		float distance = currentBestLocation.distanceTo(explosion.location);
+		if (distance < explosion.killZoneDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
-			result.putExtra(InfoActivity.Key.MESSAGE.name(), "KIA\nEpicentrum: " + (int) distance + "m");
+			String text = "KIA\nEpicentrum: " + (int) distance + "m";
+			result.putExtra(InfoActivity.Key.MESSAGE.name(), text);
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.hit);
 			result.putExtra(InfoActivity.Key.BEEP.name(), true);
 			result.putExtra(InfoActivity.Key.CONTINIOUS_VIBRATION.name(), true);
 			show(result);
-		} else if (distance < OBSERVE_ZONE) {
+		} else if (distance < explosion.warrningDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
-			result.putExtra(InfoActivity.Key.MESSAGE.name(), "Ostrzał w okolicy!\nEpicentrum: "
-					+ (int) distance + "m");
+			String text = "Ostrzał w okolicy!\nEpicentrum: " + (int) distance + "m";
+			result.putExtra(InfoActivity.Key.MESSAGE.name(), text);
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.warrning);
 			show(result);
 		}
@@ -41,7 +41,7 @@ public class App extends Application {
 	private void show(Intent result) {
 		result.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		startActivity(result);
-		explosionAt = null;
+		explosion = null;
 	}
 
 	public Location getCurrentBestLocation() {
@@ -53,8 +53,8 @@ public class App extends Application {
 		checkDistance();
 	}
 
-	public void explosionEvent(Location location, String from) {
-		explosionAt = location;
+	public void explosionEvent(MortarMessage info, String from) {
+		explosion = info;
 		startService(new Intent(this, ListenerService.class));
 		checkDistance();
 	}

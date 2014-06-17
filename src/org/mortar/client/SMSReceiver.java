@@ -23,7 +23,7 @@ public class SMSReceiver extends BroadcastReceiver {
 				MortarMessage info = MortarMessage.deserialize(msg.contents);
 				switch(info.type) {
 				case EXPLOSION:
-					app.explosionEvent(info.location, msg.from);
+					app.explosionEvent(info, msg.from);
 					break;
 				case PREPARE:
 					context.startService(new Intent(context, ListenerService.class));

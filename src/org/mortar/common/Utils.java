@@ -1,9 +1,9 @@
 package org.mortar.common;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -17,13 +17,17 @@ public class Utils {
 		}
 	}
 
-	public static void handle(IOException ex, Context context) {
+	public static void handle(Exception ex, Context context) {
 		Log.e("!!!", "error", ex);
 		Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
 	}
 
 	public static void toast(String string, Context ctx) {
 		Toast.makeText(ctx, string, Toast.LENGTH_LONG).show();
+	}
+
+	public static String n(String string) {
+		return string == null ? "" : string;
 	}
 
 }

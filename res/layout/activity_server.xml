@@ -1,37 +1,78 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/LinearLayout1"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     tools:context="${packageName}.${activityClass}" >
 
-    <EditText
-        android:id="@+id/phoneNumberText"
-        android:layout_width="fill_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Phone"
-        android:inputType="phone" >
+        android:orientation="vertical" >
 
-        <requestFocus />
-    </EditText>
-    <EditText
-        android:id="@+id/message"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="Message"
-        android:ems="10"
-        android:inputType="text" >
+        <EditText
+            android:id="@+id/utmZoneText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="UTM Zone" >
 
-    </EditText>
-    
-    <Button
-        android:id="@+id/sendButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Send" />
+            <requestFocus />
+        </EditText>
 
+        <EditText
+            android:id="@+id/eastingText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Easting"
+            android:inputType="number" />
 
-</LinearLayout>
+        <EditText
+            android:id="@+id/northingText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Norting"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/killZoneDiameterText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Kill zone diameter"
+            android:inputType="number"
+            android:text="30" />
+
+        <EditText
+            android:id="@+id/warrningDiameterText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Warrning diameter"
+            android:inputType="number"
+            android:text="300" />
+
+        <Button
+            android:id="@+id/prepareButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prepare" />
+
+        <Button
+            android:id="@+id/fireButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FIRE" />
+
+        <TextView
+            android:id="@+id/statusView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:typeface="monospace" />
+
+    </LinearLayout>
+
+</ScrollView>

@@ -16,6 +16,8 @@ public class MortarMessage {
 	
 	public final Type type;
 	public final Location location;
+	public int killZoneDiameter;
+	public int warrningDiameter;
 	
 	public MortarMessage(Type type, Location location) {
 		super();
@@ -31,6 +33,8 @@ public class MortarMessage {
 		out.writeDouble(location.getLatitude());
 		out.writeDouble(location.getLongitude());
 		out.writeLong(location.getTime());
+		out.writeShort(killZoneDiameter);
+		out.writeShort(warrningDiameter);
 		return buf.toByteArray();		
 	}
 	
@@ -44,6 +48,9 @@ public class MortarMessage {
 		location.setLatitude(in.readDouble());
 		location.setLongitude(in.readDouble());
 		location.setTime(in.readLong());		
-		return new MortarMessage(type, location);
+		MortarMessage message = new MortarMessage(type, location);
+		message.killZoneDiameter = in.readShort();
+		message.warrningDiameter = in.readShort();
+		return message;
 	}
 }
