@@ -1,16 +1,21 @@
 package org.mortar.client;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.TextView;
 
 public class InfoActivity extends Activity {
 
 	private static final int STREAM = AudioManager.STREAM_MUSIC;
+	public static enum Key {
+		MESSAGE,FROM
+	}
 	private Vibrator vibrator;
 	private int userVolume;
 	private AudioManager audioManager;
@@ -20,7 +25,11 @@ public class InfoActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_info);
-		View infoText = findViewById(R.id.infoText);
+		TextView infoText = (TextView) findViewById(R.id.infoText);
+		infoText.setText(
+				getIntent().getStringExtra(Key.MESSAGE.name())+"\n"+
+				getIntent().getStringExtra(Key.FROM.name())
+		);
 		infoText.setOnClickListener(new OnClickListener() {			
 			@Override
 			public void onClick(View v) {
