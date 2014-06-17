@@ -1,5 +1,7 @@
 package org.mortar.client;
 
+import org.mortar.client.activities.InfoActivity;
+
 import android.app.Application;
 import android.content.Intent;
 import android.location.Location;
@@ -26,18 +28,20 @@ public class App extends Application {
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.hit);
 			result.putExtra(InfoActivity.Key.BEEP.name(), true);
 			result.putExtra(InfoActivity.Key.CONTINIOUS_VIBRATION.name(), true);
-			result.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			startActivity(result);
-			explosionAt = null;
+			show(result);
 		} else if (distance < OBSERVE_ZONE) {
 			Intent result = new Intent(this, InfoActivity.class);
 			result.putExtra(InfoActivity.Key.MESSAGE.name(), "Ostrzał w okolicy!\nEpicentrum: "
 					+ (int) distance + "m");
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.warrning);
-			result.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			startActivity(result);
-			explosionAt = null;
+			show(result);
 		}
+	}
+
+	private void show(Intent result) {
+		result.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(result);
+		explosionAt = null;
 	}
 
 	public Location getCurrentBestLocation() {

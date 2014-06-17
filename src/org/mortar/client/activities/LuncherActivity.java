@@ -1,4 +1,6 @@
-package org.mortar.client;
+package org.mortar.client.activities;
+
+import org.mortar.client.ListenerService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,7 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class LuncherActivity extends Activity {
 	public static enum Cmd {
 		EXIT
 	}
@@ -16,7 +18,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		final MainActivity thiz = MainActivity.this;
+		final LuncherActivity thiz = LuncherActivity.this;
 		Intent intent = getIntent();
 		if (intent.getIntExtra(Cmd.class.getSimpleName(), -1) == Cmd.EXIT.ordinal()) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);

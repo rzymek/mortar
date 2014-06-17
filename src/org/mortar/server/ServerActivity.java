@@ -1,7 +1,14 @@
-package org.mortar.client;
+package org.mortar.server;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
+
+import org.mortar.client.App;
+import org.mortar.client.R;
+import org.mortar.client.SMSReceiver;
+import org.mortar.utils.AttackSerializer;
+import org.mortar.utils.Utils;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -29,27 +36,41 @@ public class ServerActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				String phone = phoneNumberText.getText().toString();
+				// TEST CODE {
 				if (TextUtils.isEmpty(phone)) {
 					App app = (App) getApplication();
-					Location location = SMSReceiver.parserLocation(message.getText().toString());
-					location.setTime(System.currentTimeMillis());
+					Location location = getAttackLocation();
 					app.explosionEvent(location, "");
 					return;
 				}
-				SmsManager smsManager = SmsManager.getDefault();
-				byte[] data = getBytes(message.getText().toString());
+				// } TEST CODE
+				try {
+					SmsManager smsManager = SmsManager.getDefault();
+					byte[] data = AttackSerializer.write(getAttackLocation());
 
-				PendingIntent sent = createPendingResult(1, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT);
-				PendingIntent delivered = createPendingResult(2, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT);
-				smsManager.sendDataMessage(phone, null, (short) R.integer.sms_port, data, sent, delivered);
+					PendingIntent sent = createPendingResult(1, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT);
+					PendingIntent delivered = createPendingResult(2, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT);
+					smsManager.sendDataMessage(phone, null, (short) R.integer.sms_port, data, sent, delivered);
+				} catch (IOException ex) {
+					Utils.handle(ex, getApplicationContext());
+				}
 			}
 		});
 		LocationManager location = (LocationManager) getSystemService(LOCATION_SERVICE);
 		Location lastKnownLocation = location.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-		if(lastKnownLocation != null) {
-			message.setText(String.format(Locale.US, "%2.4f %2.4f", 
-					lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude()));
+		if (lastKnownLocation != null) {
+			message.setText(String.format(Locale.US, "%2.4f %2.4f", lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()));
 		}
+	}
+
+	protected Location getAttackLocation() {
+		final TextView message = (TextView) findViewById(R.id.message);
+		String[] split = message.getText().toString().split(" ");
+		Location location = new Location(LocationManager.GPS_PROVIDER);
+		location.setLatitude(Double.parseDouble(split[0]));
+		location.setLongitude(Double.parseDouble(split[1]));
+		location.setTime(System.currentTimeMillis());
+		return location;
 	}
 
 	@Override

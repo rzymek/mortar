@@ -1,5 +1,7 @@
 package org.mortar.client;
 
+import org.mortar.client.activities.LuncherActivity;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -15,13 +17,13 @@ import android.support.v4.app.NotificationCompat;
 public class ListenerService extends Service implements LocationListener {
 	private static final int NOTIFIFACTION_ID = 1337;
 	private static final long LOC_MIN_TIME = 1 * 60 * 1000;
-	private static final float LOC_MIN_DIST = 3;
+	private static final float LOC_MIN_DIST = 0;
 	private LocationManager locationManager;
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Intent resultIntent = new Intent(this, MainActivity.class);
-		resultIntent.putExtra(MainActivity.Cmd.class.getSimpleName(), MainActivity.Cmd.EXIT.ordinal());
+		Intent resultIntent = new Intent(this, LuncherActivity.class);
+		resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
 		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
@@ -35,11 +37,11 @@ public class ListenerService extends Service implements LocationListener {
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-		start();
+		startGPS();
 		return START_NOT_STICKY;
 	}
 
-	private void start() {
+	private void startGPS() {
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOC_MIN_TIME, LOC_MIN_DIST, this);
 	}
 
@@ -54,6 +56,10 @@ public class ListenerService extends Service implements LocationListener {
 	public void onDestroy() {
 		super.onDestroy();
 		stopForeground(true);
+		stopGPS();
+	}
+
+	private void stopGPS() {
 		locationManager.removeUpdates(this);
 	}
 
