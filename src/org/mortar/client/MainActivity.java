@@ -30,7 +30,6 @@ public class MainActivity extends Activity {
 			builder.setNegativeButton(android.R.string.cancel, new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					startActivity(new Intent(thiz, InfoActivity.class));
 					finish();
 				}
 			});

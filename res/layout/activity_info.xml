@@ -10,7 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin" >
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/infoText"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:gravity="center"

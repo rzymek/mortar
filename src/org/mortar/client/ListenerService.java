@@ -1,5 +1,8 @@
 package org.mortar.client;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,6 +16,7 @@ public class ListenerService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		final ListenerService thiz = this;
 		Intent resultIntent = new Intent(this, MainActivity.class);
 		resultIntent.putExtra("CMD", CMD_EXIT);
 		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -25,6 +29,16 @@ public class ListenerService extends Service {
 			.build();
 		notification.flags |= Notification.FLAG_NO_CLEAR;
 		startForeground(NOTIFIFACTION_ID, notification);
+		
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {			
+			@Override
+			public void run() {
+				Intent i = new Intent(thiz, InfoActivity.class);
+				i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(i);
+			}
+		}, 5*1000);
 		return START_NOT_STICKY;
 	}
 
