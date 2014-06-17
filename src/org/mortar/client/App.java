@@ -23,7 +23,9 @@ public class App extends Application {
 		float distance = currentBestLocation.distanceTo(explosion.location);
 		if (distance < explosion.killZoneDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
-			String text = "KIA\nEpicentrum: " + (int) distance + "m";
+			String text = "KIA\nEpicentrum: " + (int) distance + "m"
+					+ "\nStrefa KIA:"+explosion.killZoneDiameter+"m"
+					+ "\nSłychać na:"+explosion.warrningDiameter;
 			result.putExtra(InfoActivity.Key.MESSAGE.name(), text);
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.hit);
 			result.putExtra(InfoActivity.Key.BEEP.name(), true);
@@ -31,7 +33,9 @@ public class App extends Application {
 			show(result);
 		} else if (distance < explosion.warrningDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
-			String text = "Ostrzał w okolicy!\nEpicentrum: " + (int) distance + "m";
+			String text = "Ostrzał w okolicy!\nEpicentrum: " + (int) distance + "m"
+					+ "\nStrefa KIA:"+explosion.killZoneDiameter+"m"
+					+ "\nSłychać na:"+explosion.warrningDiameter;
 			result.putExtra(InfoActivity.Key.MESSAGE.name(), text);
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.warrning);
 			show(result);

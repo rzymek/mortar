@@ -1,10 +1,6 @@
 package org.mortar.client.activities;
 
 import org.mortar.client.R;
-import org.mortar.client.R.color;
-import org.mortar.client.R.id;
-import org.mortar.client.R.layout;
-import org.mortar.client.R.raw;
 
 import android.app.Activity;
 import android.content.Intent;
