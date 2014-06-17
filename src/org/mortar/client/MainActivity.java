@@ -9,13 +9,16 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+	public static enum Cmd {
+		EXIT
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		final MainActivity thiz = MainActivity.this;
 		Intent intent = getIntent();
-		if (intent.getIntExtra("CMD", 0) == ListenerService.CMD_EXIT) {
+		if (intent.getIntExtra(Cmd.class.getSimpleName(), -1) == Cmd.EXIT.ordinal()) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Mortar Client");
 			builder.setMessage("Exit?");
@@ -30,11 +33,6 @@ public class MainActivity extends Activity {
 			builder.setNegativeButton(android.R.string.cancel, new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					Intent result = new Intent(thiz, InfoActivity.class);
-					result.putExtra(InfoActivity.Key.MESSAGE.name(), "KIA");
-					result.putExtra(InfoActivity.Key.FROM.name(), "");
-					result.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					thiz.startActivity(result);
 					finish();
 				}
 			});

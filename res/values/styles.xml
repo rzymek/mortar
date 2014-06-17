@@ -26,4 +26,7 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
+    <color name="hit">#ff0000</color>
+    <color name="warrning">#ffff00</color>
+    
 </resources>

@@ -6,6 +6,8 @@ import java.util.Set;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
@@ -18,27 +20,32 @@ public class SMSReceiver extends BroadcastReceiver {
 		if (bundle != null) {
 			StringBuilder message = new StringBuilder();
 			Object[] pdus = (Object[]) bundle.get("pdus");
-			String from = null;
+			String from="";
+			long timestamp=0;
 			for (Object pdu : pdus) {
 				SmsMessage msg = SmsMessage.createFromPdu((byte[]) pdu);
 				message.append(toUTF8(msg.getUserData()));
-				if (from == null) {
-					from = msg.getOriginatingAddress();
-				}
-				long timestamp = msg.getTimestampMillis();
+				from = msg.getOriginatingAddress();
+				timestamp = msg.getTimestampMillis();
 			}
-
-			Intent result = new Intent(context, InfoActivity.class);
-			result.putExtra(InfoActivity.Key.MESSAGE.name(), message.toString());
-			result.putExtra(InfoActivity.Key.FROM.name(), from);
-			result.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			context.startActivity(result);
+			App app = (App) context;
+			Location location = parserLocation(message.toString());
+			location.setTime(timestamp);
+			app.explosionEvent(location, from);
 		}
+	}
+
+	public static Location parserLocation(String s) {
+		String[] coords = s.split(" ");
+		Location location = new Location(LocationManager.GPS_PROVIDER);
+		location.setLatitude(Location.convert(coords[0]));
+		location.setLongitude(Location.convert(coords[1]));
+		return location;
 	}
 
 	private String toUTF8(byte[] userData) {
 		try {
-			return new String(userData,"utf-8");
+			return new String(userData, "utf-8");
 		} catch (UnsupportedEncodingException e) {
 			return new String(userData);
 		}
