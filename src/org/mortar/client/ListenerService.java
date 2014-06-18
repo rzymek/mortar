@@ -1,5 +1,9 @@
 package org.mortar.client;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.mortar.client.activities.LuncherActivity;
 
 import android.app.Notification;
@@ -17,9 +21,28 @@ import android.support.v4.app.NotificationCompat;
 public class ListenerService extends Service implements LocationListener {
 	private static final int NOTIFIFACTION_ID = 1337;
 	private static final long LOC_MIN_TIME = 1 * 60 * 1000;
+	private static final long MAX_GPS_TIME = 3 * 60;
+	private static final long SPIN_GPS_EVERY = 15 * 60;
 	private static final float LOC_MIN_DIST = 0;
 	private LocationManager locationManager;
-	
+	private Runnable gpsOn = new Runnable() {
+		@Override
+		public void run() {
+			startGPS();
+			scheduler.schedule(gpsOff, MAX_GPS_TIME, TimeUnit.SECONDS);
+		}
+	};
+	private Runnable gpsOff = new Runnable() {
+		@Override
+		public void run() {
+			App app = (App) getApplication();
+			if(app.isCurrentLocationValid()) { 
+				stopGPS();
+			}
+		}
+	};
+	private ScheduledExecutorService scheduler;
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Intent resultIntent = new Intent(this, LuncherActivity.class);
@@ -34,10 +57,12 @@ public class ListenerService extends Service implements LocationListener {
 			.build();
 		notification.flags |= Notification.FLAG_NO_CLEAR;
 		startForeground(NOTIFIFACTION_ID, notification);
-
+		
+		scheduler = Executors.newScheduledThreadPool(1);
+		scheduler.scheduleWithFixedDelay(gpsOn, 0, SPIN_GPS_EVERY, TimeUnit.SECONDS);
+		
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-		startGPS();
 		return START_NOT_STICKY;
 	}
 
@@ -57,6 +82,7 @@ public class ListenerService extends Service implements LocationListener {
 		super.onDestroy();
 		stopForeground(true);
 		stopGPS();
+		scheduler.shutdown();
 	}
 
 	private void stopGPS() {

@@ -17,7 +17,7 @@ public class App extends Application {
 		if (currentBestLocation == null || explosion == null) {
 			return;
 		}
-		if (Math.abs(currentBestLocation.getTime() - explosion.location.getTime()) > TIMEOUT) {
+		if (isCurrentLocationValid()) {
 			return;
 		}
 		float distance = currentBestLocation.distanceTo(explosion.location);
@@ -40,6 +40,10 @@ public class App extends Application {
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.warrning);
 			show(result);
 		}
+	}
+
+	public boolean isCurrentLocationValid() {
+		return Math.abs(currentBestLocation.getTime() - explosion.location.getTime()) > TIMEOUT;
 	}
 
 	private void show(Intent result) {
