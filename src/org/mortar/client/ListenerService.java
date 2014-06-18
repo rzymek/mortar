@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.mortar.client.activities.LuncherActivity;
+import org.mortar.client.data.DBHelper;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -42,6 +43,7 @@ public class ListenerService extends Service implements LocationListener {
 		}
 	};
 	private ScheduledExecutorService scheduler;
+	private DBHelper db;
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -63,6 +65,7 @@ public class ListenerService extends Service implements LocationListener {
 		
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+		db = new DBHelper(this);
 		return START_NOT_STICKY;
 	}
 
@@ -74,6 +77,7 @@ public class ListenerService extends Service implements LocationListener {
 		App app = (App) getApplication();
 		if(isBetterLocation(location, app.getCurrentBestLocation())) {
 			app.setCurrentBestLocation(location);
+			db.put(location);
 		}
 	}
 

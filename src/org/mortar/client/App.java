@@ -57,7 +57,7 @@ public class App extends Application {
 	}
 
 	public void setCurrentBestLocation(Location currentBestLocation) {
-		this.currentBestLocation = currentBestLocation;
+		this.currentBestLocation = currentBestLocation;		
 		checkDistance();
 	}
 
