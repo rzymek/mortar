@@ -27,7 +27,7 @@ public class ViewLogActivity extends ActionBarActivity {
 		DBHelper db = new DBHelper(this);
 		Cursor all = db.getAll();
 		StringBuilder buf = new StringBuilder();
-		while(!all.isLast()) {
+		while(all.moveToNext()) {
 			String utm = all.getString(0);
 			long timestamp = all.getLong(1);
 			buf.append(utm).append(" ").append(new Date(timestamp)).append("\n");
