@@ -13,44 +13,47 @@ public class MortarMessage {
 	public static enum Type {
 		PREPARE, EXPLOSION
 	}
-	
+
 	public final Type type;
-	public final Location location;
+	public Location location;
 	public int killZoneDiameter;
 	public int warrningDiameter;
-	
-	public MortarMessage(Type type, Location location) {
+
+	public MortarMessage(Type type) {
 		super();
 		this.type = type;
-		this.location = location;
 	}
 
 	public byte[] serialize() throws IOException {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(buf);
-		
+
 		out.writeByte(type.ordinal());
-		out.writeDouble(location.getLatitude());
-		out.writeDouble(location.getLongitude());
-		out.writeLong(location.getTime());
-		out.writeShort(killZoneDiameter);
-		out.writeShort(warrningDiameter);
-		return buf.toByteArray();		
+		if (type == Type.EXPLOSION) {
+			out.writeDouble(location.getLatitude());
+			out.writeDouble(location.getLongitude());
+			out.writeLong(location.getTime());
+			out.writeShort(killZoneDiameter);
+			out.writeShort(warrningDiameter);
+		}
+		return buf.toByteArray();
 	}
-	
+
 	public static MortarMessage deserialize(byte[] data) throws IOException {
 		ByteArrayInputStream buf = new ByteArrayInputStream(data);
 		DataInputStream in = new DataInputStream(buf);
 
-		Location location = new Location(LocationManager.GPS_PROVIDER);
+		Type type = Type.values()[in.readByte()];
+		MortarMessage message = new MortarMessage(type);
+		if (type == Type.EXPLOSION) {
+			Location location = new Location(LocationManager.GPS_PROVIDER);
 
-		Type type = Type.values()[in.readByte()];		
-		location.setLatitude(in.readDouble());
-		location.setLongitude(in.readDouble());
-		location.setTime(in.readLong());		
-		MortarMessage message = new MortarMessage(type, location);
-		message.killZoneDiameter = in.readShort();
-		message.warrningDiameter = in.readShort();
+			location.setLatitude(in.readDouble());
+			location.setLongitude(in.readDouble());
+			location.setTime(in.readLong());
+			message.killZoneDiameter = in.readShort();
+			message.warrningDiameter = in.readShort();
+		}
 		return message;
 	}
 }

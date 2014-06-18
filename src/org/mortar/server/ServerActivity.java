@@ -54,14 +54,20 @@ public class ServerActivity extends Activity {
 		killZoneDiameterText = (TextView) findViewById(R.id.killZoneDiameterText);
 		warrningDiameterText = (TextView) findViewById(R.id.warrningDiameterText);
 		
-		View sendButton = findViewById(R.id.fireButton);
-		sendButton.setOnClickListener(new OnClickListener() {
+		findViewById(R.id.fireButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				if(clients.isEmpty())
 					testHit();
-				else
-					fire();
+				else {
+					broadcast(createFireMessage());
+				}
+			}
+		});
+		findViewById(R.id.prepareButton).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				broadcast(new MortarMessage(Type.PREPARE));				
 			}
 		});
 		clients = loadClientNumbers();
@@ -80,7 +86,7 @@ public class ServerActivity extends Activity {
 	protected void testHit() {		
 		try {
 			App app = (App) getApplication();
-			MortarMessage msg = createMortarMessage();
+			MortarMessage msg = createFireMessage();
 			app.explosionEvent(msg, "");
 		}catch(Exception ex){
 			Utils.handle(ex, this);
@@ -160,10 +166,9 @@ public class ServerActivity extends Activity {
 		statusView.setText(text);		
 	}
 
-	private void fire() {
+	private void broadcast(final MortarMessage message) {
 		try {
 			final SmsManager smsManager = SmsManager.getDefault();
-			final MortarMessage message = createMortarMessage();
 			final byte[] userData = message.serialize();
 			for (String phone: clients) {
 				clientStatus.put(phone, "sending");
@@ -180,10 +185,12 @@ public class ServerActivity extends Activity {
 		}
 	}
 
-	private MortarMessage createMortarMessage() {
-		final MortarMessage message = new MortarMessage(Type.EXPLOSION, getAttackLocation());
+	private MortarMessage createFireMessage() {
+		final MortarMessage message = new MortarMessage(Type.EXPLOSION);
+		message.location = getAttackLocation();
 		message.killZoneDiameter = Integer.parseInt(killZoneDiameterText.getText().toString());
 		message.warrningDiameter = Integer.parseInt(warrningDiameterText.getText().toString());
 		return message;
 	}
+
 }
