@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 
 public class DBHelper extends SQLiteOpenHelper {
-
+ 
 	public DBHelper(Context context) {
 		super(context, "GpsLog", null, 1);
 	}
@@ -38,5 +38,18 @@ public class DBHelper extends SQLiteOpenHelper {
 		SQLiteDatabase db = getReadableDatabase();
 		String[] columns ={"utm","timestamp"};
 		return db.query("log", columns, null, null, null, null, "timestamp desc");		
+	}
+
+	public void put(String string) {
+		SQLiteDatabase db = getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put("utm", string);
+		values.put("timestamp", System.currentTimeMillis());
+		db.insert("log", null, values);		
+	}
+
+	public void reset() {
+		SQLiteDatabase db = getWritableDatabase();
+		db.delete("log", null, null);
 	}
 }

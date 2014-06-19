@@ -1,9 +1,5 @@
 package org.mortar.client;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.data.DBHelper;
 
@@ -16,21 +12,22 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
 public class ListenerService extends Service implements LocationListener {
 	private static final int NOTIFIFACTION_ID = 1337;
 	private static final long LOC_MIN_TIME = 1 * 60 * 1000;
-	private static final long MAX_GPS_TIME = 3 * 60;
-	private static final long SPIN_GPS_EVERY = 15 * 60;
+	private static final long MAX_GPS_TIME = 3 * 60 * 1000;
+	private static final long SPIN_GPS_EVERY = 5 * 60 * 1000;
 	private static final float LOC_MIN_DIST = 0;
 	private LocationManager locationManager;
 	private Runnable gpsOn = new Runnable() {
 		@Override
 		public void run() {
 			startGPS();
-			scheduler.schedule(gpsOff, MAX_GPS_TIME, TimeUnit.SECONDS);
+			mainHandler.postDelayed(gpsOff, MAX_GPS_TIME);
 		}
 	};
 	private Runnable gpsOff = new Runnable() {
@@ -39,11 +36,12 @@ public class ListenerService extends Service implements LocationListener {
 			App app = (App) getApplication();
 			if(app.isCurrentLocationValid()) { 
 				stopGPS();
+				mainHandler.postDelayed(gpsOn, SPIN_GPS_EVERY);
 			}
 		}
 	};
-	private ScheduledExecutorService scheduler;
 	private DBHelper db;
+	private Handler mainHandler;
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -60,36 +58,40 @@ public class ListenerService extends Service implements LocationListener {
 		notification.flags |= Notification.FLAG_NO_CLEAR;
 		startForeground(NOTIFIFACTION_ID, notification);
 		
-		scheduler = Executors.newScheduledThreadPool(1);
-		scheduler.scheduleWithFixedDelay(gpsOn, 0, SPIN_GPS_EVERY, TimeUnit.SECONDS);
-		
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		mainHandler = new Handler(getMainLooper());
 
 		db = new DBHelper(this);
+		db.put("init");
+
+		gpsOn.run();
 		return START_NOT_STICKY;
 	}
 
 	private void startGPS() {
+		db.put("start GPS");
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOC_MIN_TIME, LOC_MIN_DIST, this);
 	}
 
 	public void onLocationChanged(Location location) {
 		App app = (App) getApplication();
 		if(isBetterLocation(location, app.getCurrentBestLocation())) {
-			app.setCurrentBestLocation(location);
 			db.put(location);
+			app.setCurrentBestLocation(location);
 		}
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		db.put("listener destroy");
+		db.close();
 		stopForeground(true);
 		stopGPS();
-		scheduler.shutdown();
 	}
 
 	private void stopGPS() {
+		db.put("stop GPS");
 		locationManager.removeUpdates(this);
 	}
 

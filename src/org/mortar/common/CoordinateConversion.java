@@ -71,6 +71,10 @@ public class CoordinateConversion {
 		public String latZone;
 		public int easting;
 		public int northing;
+		@Override
+		public String toString() {
+			return longZone+latZone+" "+easting+" "+northing;
+		}
 	}
 
 	private class LatLon2UTM {

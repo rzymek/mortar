@@ -65,7 +65,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="org.mortar.client.ViewLogActivity"
+            android:name="org.mortar.client.activities.ViewLogActivity"
             android:label="@string/title_activity_view_log" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

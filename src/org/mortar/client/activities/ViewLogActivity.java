@@ -1,7 +1,10 @@
-package org.mortar.client;
+package org.mortar.client.activities;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
+import org.mortar.client.R;
 import org.mortar.client.data.DBHelper;
 
 import android.database.Cursor;
@@ -13,24 +16,33 @@ import android.widget.TextView;
 
 public class ViewLogActivity extends ActionBarActivity {
 
+	private DBHelper db;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_view_log);
 
 		if (savedInstanceState == null) {
+			db = new DBHelper(this);
 			refresh();
 		}
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		db.close();
+	}
+
 	private void refresh() {
-		DBHelper db = new DBHelper(this);
 		Cursor all = db.getAll();
 		StringBuilder buf = new StringBuilder();
-		while(all.moveToNext()) {
+		SimpleDateFormat fmt = new SimpleDateFormat("MM.dd HH:mm:ss", Locale.ENGLISH);
+		while (all.moveToNext()) {
 			String utm = all.getString(0);
 			long timestamp = all.getLong(1);
-			buf.append(utm).append(" ").append(new Date(timestamp)).append("\n");
+			buf.append(fmt.format(new Date(timestamp))).append(" ").append(utm).append("\n");
 		}
 		TextView logView = (TextView) findViewById(R.id.logView);
 		logView.setText(buf);
@@ -51,11 +63,13 @@ public class ViewLogActivity extends ActionBarActivity {
 		int id = item.getItemId();
 		if (id == R.id.action_refresh) {
 			refresh();
-			return true;
+		} else if (id == R.id.action_reset) {
+			db.reset();
+			refresh();
+		} else {
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+		return true;
 	}
-
-
 
 }
