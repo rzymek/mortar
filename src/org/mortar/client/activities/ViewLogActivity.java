@@ -37,15 +37,22 @@ public class ViewLogActivity extends ActionBarActivity {
 
 	private void refresh() {
 		Cursor all = db.getAll();
-		StringBuilder buf = new StringBuilder();
-		SimpleDateFormat fmt = new SimpleDateFormat("MM.dd HH:mm:ss", Locale.ENGLISH);
-		while (all.moveToNext()) {
-			String utm = all.getString(0);
-			long timestamp = all.getLong(1);
-			buf.append(fmt.format(new Date(timestamp))).append(" ").append(utm).append("\n");
+		try {
+			StringBuilder buf = new StringBuilder();
+			SimpleDateFormat fmt = new SimpleDateFormat("MM.dd HH:mm:ss", Locale.ENGLISH);
+			int limit = 500;
+			while (all.moveToNext()) {
+				String utm = all.getString(0);
+				long timestamp = all.getLong(1);
+				buf.append(fmt.format(new Date(timestamp))).append(" ").append(utm).append("\n");
+				if(--limit < 0)
+					break;
+			}
+			TextView logView = (TextView) findViewById(R.id.logView);
+			logView.setText(buf);
+		}finally{
+			all.close();
 		}
-		TextView logView = (TextView) findViewById(R.id.logView);
-		logView.setText(buf);
 	}
 
 	@Override

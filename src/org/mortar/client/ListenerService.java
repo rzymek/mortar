@@ -23,8 +23,8 @@ public class ListenerService extends Service implements LocationListener {
 	private static final long MAX_GPS_TIME = 10 * 1000;// 1 * 60 * 1000;
 	private static final long SPIN_GPS_EVERY = 10 * 1000;// 5 * 60 * 1000;
 	private static final float LOC_MIN_DIST = 5;
-	protected static final int GPS_ON = 1;
-	protected static final int GPS_OFF = 2;
+	protected static final int GPS_ON = 61;
+	protected static final int GPS_OFF = 60;
 	private LocationManager locationManager;
 	private DBHelper db;
 	private Handler handler;
@@ -48,12 +48,15 @@ public class ListenerService extends Service implements LocationListener {
 		handler = new Handler(getMainLooper()) {
 			@Override
 			public void handleMessage(Message msg) {
+				db.put("handle:"+msg.what);
 				switch (msg.what) {
 					case GPS_OFF:
 						App app = (App) getApplication();
 						if (app.isCurrentLocationValid()) {
 							stopGPS();
 							handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), SPIN_GPS_EVERY);
+						}else{
+							handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), MAX_GPS_TIME);							
 						}
 						return;
 					case GPS_ON:
@@ -93,7 +96,7 @@ public class ListenerService extends Service implements LocationListener {
 			if(lastSavedLocation != null) {
 				if(lastSavedLocation.distanceTo(location) < LOC_MIN_DIST) 
 					return; 
-				if((location.getTime() - lastSavedLocation.getTime())/1000 < LOC_MIN_TIME)
+				if (location.getTime() - lastSavedLocation.getTime() < LOC_MIN_TIME)
 					return;
 			}
 			lastSavedLocation = location;
