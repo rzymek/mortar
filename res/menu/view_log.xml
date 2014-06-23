@@ -4,16 +4,24 @@
     tools:context="org.mortar.client.ViewLogActivity" >
 
     <item
-        android:id="@+id/action_reset"
-		android:icon="@android:drawable/ic_menu_delete"
-        android:orderInCategory="100"
-        android:title="Reset"
-        app:showAsAction="ifRoom"/>
-    <item
         android:id="@+id/action_refresh"
-		android:icon="@android:drawable/ic_menu_revert"
-        android:orderInCategory="100"
+        android:icon="@android:drawable/ic_popup_sync"
+        android:orderInCategory="101"
         android:title="Refresh"
+        app:showAsAction="always"/>
+    
+    <item
+        android:id="@+id/action_export"
+        android:icon="@android:drawable/ic_menu_share"
+        android:orderInCategory="102"
+        android:title="Export"
         app:showAsAction="ifRoom"/>
     
+    <item
+        android:id="@+id/action_reset"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:orderInCategory="103"
+        android:title="Reset"
+        app:showAsAction="ifRoom"/>
+
 </menu>

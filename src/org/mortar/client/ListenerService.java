@@ -40,15 +40,6 @@ public class ListenerService extends Service implements LocationListener {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Intent resultIntent = new Intent(this, LuncherActivity.class);
-		resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
-		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
-		Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent)
-				.setSmallIcon(R.drawable.ic_launcher).setContentTitle("Mortar Client").build();
-		notification.flags |= Notification.FLAG_NO_CLEAR;
-		startForeground(NOTIFIFACTION_ID, notification);
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -84,6 +75,15 @@ public class ListenerService extends Service implements LocationListener {
 		if (config != null) {
 			setConfig(config);
 		} else {
+			Intent resultIntent = new Intent(this, LuncherActivity.class);
+			resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
+			resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+			PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
+			Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent)
+					.setSmallIcon(R.drawable.ic_launcher).setContentTitle("Mortar Client").build();
+			notification.flags |= Notification.FLAG_NO_CLEAR;
+			startForeground(NOTIFIFACTION_ID, notification);
+
 			startGPS();
 		}
 		return START_NOT_STICKY;
@@ -94,6 +94,7 @@ public class ListenerService extends Service implements LocationListener {
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
 				config.locationMinInterval,
 				config.locationMinDistance, this);
+		handler.removeMessages(GPS_ON);
 		handler.removeMessages(GPS_OFF);
 		handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
 	}

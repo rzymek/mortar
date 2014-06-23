@@ -1,0 +1,3 @@
+	  <trkpt lat="%f" lon="%f">
+        <time>%s</time>
+      </trkpt>        

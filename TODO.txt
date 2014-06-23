@@ -1,0 +1,1 @@
+Włączaj GPS tylko na komunikat PREPARE oraz przy wzbudzeniu ekranu. 
