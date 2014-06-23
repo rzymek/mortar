@@ -5,11 +5,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 import android.location.Location;
 import android.location.LocationManager;
 
 public class MortarMessage {
+
 	public static enum Type {
 		PREPARE, EXPLOSION, CONFIG
 	}

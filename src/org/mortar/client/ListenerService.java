@@ -23,21 +23,29 @@ import android.support.v4.app.NotificationCompat;
 public class ListenerService extends Service implements LocationListener {
 	protected static final int GPS_ON = 61;
 	protected static final int GPS_OFF = 60;
+	protected static final int LOW_ALERT = 66;
 	private static final int NOTIFIFACTION_ID = 1337;
 	public static final String EXTRA_CONFIG = "config";
+	public static final String EXTRA_ACTIVE_MINUTES = "prepare";
 
 	private LocationManager locationManager;
 	private DBHelper db;
 	private Handler handler;
 	private Location lastSavedLocation;
 	private Config config = new Config();
+	private boolean highAlert = false;
 
 	public void setConfig(Config config) {
 		this.config = config;
 		stopGPS();
+		clearHandlerMessages();
+		startGPS();
+	}
+
+	private void clearHandlerMessages() {
 		handler.removeMessages(GPS_OFF);
 		handler.removeMessages(GPS_ON);
-		startGPS();
+		handler.removeMessages(LOW_ALERT);
 	}
 
 	@Override
@@ -57,7 +65,10 @@ public class ListenerService extends Service implements LocationListener {
 		handler = new Handler(getMainLooper()) {
 			@Override
 			public void handleMessage(Message msg) {
+				clearHandlerMessages();
 				switch (msg.what) {
+				case LOW_ALERT:
+					highAlert = false;
 				case GPS_OFF:
 					App app = (App) getApplication();
 					if (app.isCurrentLocationValid()) {
@@ -105,23 +116,32 @@ public class ListenerService extends Service implements LocationListener {
 		Config config = (Config) intent.getSerializableExtra(EXTRA_CONFIG);
 		if (config != null) {
 			setConfig(config);
-		} else {
-			Intent resultIntent = new Intent(this, LuncherActivity.class);
-			resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
-			resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-			PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
-			Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent).setSmallIcon(R.drawable.ic_launcher)
-					.setContentTitle("Mortar Client").build();
-			notification.flags |= Notification.FLAG_NO_CLEAR;
-			startForeground(NOTIFIFACTION_ID, notification);
-
-			startGPS();
+			return START_NOT_STICKY;
 		}
+		
+		int forceActive = intent.getIntExtra(EXTRA_ACTIVE_MINUTES, -1);
+		if(forceActive > 0) {
+			highAlert = true;
+			clearHandlerMessages();
+			handler.sendMessageDelayed(handler.obtainMessage(LOW_ALERT), forceActive * 60 * 1000);
+			startGPS();
+			return START_NOT_STICKY;
+		}
+		Intent resultIntent = new Intent(this, LuncherActivity.class);
+		resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
+		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
+		Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent).setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle("Mortar Client").build();
+		notification.flags |= Notification.FLAG_NO_CLEAR;
+		startForeground(NOTIFIFACTION_ID, notification);
+
+		startGPS();
 		return START_NOT_STICKY;
 	}
 
 	private void startGPS() {
-		db.put("start GPS");
+		db.put("start GPS "+(highAlert?"!!!":""));
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, config.locationMinInterval, config.locationMinDistance, this);
 		handler.removeMessages(GPS_ON);
 		handler.removeMessages(GPS_OFF);
@@ -150,10 +170,14 @@ public class ListenerService extends Service implements LocationListener {
 		db.put("listener destroy");
 		db.close();
 		stopForeground(true);
-		stopGPS();
+		locationManager.removeUpdates(this);
 	}
 
 	private void stopGPS() {
+		if(highAlert){
+			db.put("ignoring stop GPS (high alert)");
+			return;
+		}
 		db.put("stop GPS");
 		locationManager.removeUpdates(this);
 	}

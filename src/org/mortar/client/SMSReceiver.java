@@ -18,18 +18,24 @@ public class SMSReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Bundle bundle = intent.getExtras();
 		if (bundle != null) {
-			try {
+			try {				
+				App app = (App) context.getApplicationContext();
+				
 				MergedMessage msg = MergedMessage.createFromBundle(bundle);
-				App app = (App) context;
-
+				if(msg == null)
+					msg = (MergedMessage) bundle.getSerializable("mortar");
+				
 				MortarMessage.Type type = getType(msg.contents);
+				Utils.toast(type.name(), context);
 				switch (type) {
 					case EXPLOSION:
 						MortarMessage info = MortarMessage.deserialize(msg.contents);
 						app.explosionEvent(info, msg.from);
 						break;
 					case PREPARE:
-						context.startService(new Intent(context, ListenerService.class));
+						Intent prepare = new Intent(context, ListenerService.class);
+						prepare.putExtra(ListenerService.EXTRA_ACTIVE_MINUTES, 10);
+						context.startService(prepare);
 						break;
 					case CONFIG:
 						ByteArrayInputStream buf = new ByteArrayInputStream(msg.contents, 1, msg.contents.length - 1);

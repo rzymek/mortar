@@ -45,7 +45,7 @@ public class App extends Application {
 	public boolean isCurrentLocationValid() {
 		if(currentBestLocation == null)
 			return false;
-		if(explosion == null)
+		if(explosion == null || explosion.location == null)
 			return true;
 		return Math.abs(currentBestLocation.getTime() - explosion.location.getTime()) > TIMEOUT;
 	}

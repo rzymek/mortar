@@ -2,6 +2,7 @@ package org.mortar.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 
 import org.mortar.client.App;
 import org.mortar.client.R;
+import org.mortar.client.data.MergedMessage;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
 import org.mortar.common.MortarMessage;
@@ -21,6 +23,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
@@ -53,61 +56,57 @@ public class ServerActivity extends Activity {
 		northingText = (TextView) findViewById(R.id.northingText);
 		killZoneDiameterText = (TextView) findViewById(R.id.killZoneDiameterText);
 		warrningDiameterText = (TextView) findViewById(R.id.warrningDiameterText);
-		
+
 		findViewById(R.id.fireButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(clients.isEmpty())
-					testHit();
-				else {
-					broadcast(createFireMessage());
-				}
+				broadcast(createFireMessage());
 			}
 		});
 		findViewById(R.id.prepareButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				broadcast(new MortarMessage(Type.PREPARE));				
+				broadcast(new MortarMessage(Type.PREPARE));
 			}
 		});
 		clients = loadClientNumbers();
 		updateStatus();
-		
+
 		LocationManager location = (LocationManager) getSystemService(LOCATION_SERVICE);
 		Location lastKnownLocation = location.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 		if (lastKnownLocation != null) {
 			UTM utm = CoordinateConversion.INST.latLon2UTM(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-			utmZoneText.setText(utm.longZone+" "+utm.latZone);
-			eastingText.setText(""+utm.easting);
-			northingText.setText(""+utm.northing);
+			utmZoneText.setText(utm.longZone + " " + utm.latZone);
+			eastingText.setText("" + utm.easting);
+			northingText.setText("" + utm.northing);
 		}
 	}
 
-	protected void testHit() {		
+	protected void testHit() {
 		try {
 			App app = (App) getApplication();
 			MortarMessage msg = createFireMessage();
 			app.explosionEvent(msg, "");
-		}catch(Exception ex){
+		} catch (Exception ex) {
 			Utils.handle(ex, this);
 		}
 	}
 
 	private List<String> loadClientNumbers() {
-		SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);		
+		SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
 		String[] raw = shared.getString(NumberListActivity.DataKey.NUMBERS.name(), "").split("\n");
 		List<String> values = new ArrayList<>(Arrays.asList(raw));
 		Iterator<String> iterator = values.iterator();
 		while (iterator.hasNext()) {
 			String string = iterator.next();
-			if(TextUtils.isEmpty(string.trim()))
+			if (TextUtils.isEmpty(string.trim()))
 				iterator.remove();
 		}
 		return values;
 	}
 
 	protected Location getAttackLocation() {
-		String utmText = utmZoneText.getText()+" "+eastingText.getText()+" "+northingText.getText();
+		String utmText = utmZoneText.getText() + " " + eastingText.getText() + " " + northingText.getText();
 		try {
 			double[] latLon = CoordinateConversion.INST.utm2LatLon(utmText);
 			Location location = new Location(LocationManager.GPS_PROVIDER);
@@ -115,7 +114,7 @@ public class ServerActivity extends Activity {
 			location.setLongitude(latLon[1]);
 			location.setTime(System.currentTimeMillis());
 			return location;
-		}catch(Exception ex) {
+		} catch (Exception ex) {
 			throw new IllegalArgumentException(utmText, ex);
 		}
 	}
@@ -123,18 +122,18 @@ public class ServerActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		String number = data.getStringExtra("number");
-		switch(requestCode) {
+		switch (requestCode) {
 		case RC_SENT:
-			clientStatus.put(number, clientStatus.get(number)+" sent("+resultCodeDesc(resultCode)+")");
+			clientStatus.put(number, clientStatus.get(number) + " sent(" + resultCodeDesc(resultCode) + ")");
 			break;
 		case RC_DELIVERY_REPORT:
 			byte[] pdu = data.getByteArrayExtra("pdu");
-			String body="";
-			if(pdu != null) {
+			String body = "";
+			if (pdu != null) {
 				SmsMessage reportSms = SmsMessage.createFromPdu(pdu);
 				body = reportSms.getMessageBody();
 			}
-			clientStatus.put(number, clientStatus.get(number)+" delivered("+resultCodeDesc(resultCode)+"):"+body);
+			clientStatus.put(number, clientStatus.get(number) + " delivered(" + resultCodeDesc(resultCode) + "):" + body);
 			break;
 		default:
 			return;
@@ -163,14 +162,24 @@ public class ServerActivity extends Activity {
 		for (String number : clients) {
 			text.append(number).append(" ").append(Utils.n(clientStatus.get(number))).append("\n");
 		}
-		statusView.setText(text);		
+		statusView.setText(text);
 	}
 
 	private void broadcast(final MortarMessage message) {
 		try {
+			if (clients.isEmpty()) {
+				Intent intent = new Intent("android.intent.action.DATA_SMS_RECEIVED");
+				intent.setData(Uri.parse("sms://0:" + R.integer.sms_port));
+				MergedMessage msg = new MergedMessage();
+				msg.contents = message.serialize();
+				msg.from = "me";
+				msg.timestamp = new Date().getTime();
+				intent.putExtra("mortar", msg);
+				sendBroadcast(intent);
+			}
 			final SmsManager smsManager = SmsManager.getDefault();
 			final byte[] userData = message.serialize();
-			for (String phone: clients) {
+			for (String phone : clients) {
 				clientStatus.put(phone, "sending");
 				updateStatus();
 				Intent data = new Intent();
@@ -180,7 +189,7 @@ public class ServerActivity extends Activity {
 				short smsPort = (short) R.integer.sms_port;
 				smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
 			}
-		}catch(Exception ex){
+		} catch (Exception ex) {
 			Utils.handle(ex, this);
 		}
 	}
