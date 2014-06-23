@@ -24,7 +24,7 @@ public class DBHelper extends SQLiteOpenHelper {
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	}
-
+	
 	public void put(Location location) {
 		SQLiteDatabase db = getWritableDatabase();
 		ContentValues values = new ContentValues();

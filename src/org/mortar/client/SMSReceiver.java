@@ -20,13 +20,15 @@ public class SMSReceiver extends BroadcastReceiver {
 				MergedMessage msg = MergedMessage.createFromBundle(bundle);
 				App app = (App) context;
 				MortarMessage info = MortarMessage.deserialize(msg.contents);
-				switch(info.type) {
-				case EXPLOSION:
-					app.explosionEvent(info, msg.from);
-					break;
-				case PREPARE:
-					context.startService(new Intent(context, ListenerService.class));
-					break;
+				switch (info.type) {
+					case EXPLOSION:
+						app.explosionEvent(info, msg.from);
+						break;
+					case PREPARE:
+						Intent service = new Intent(context, ListenerService.class);
+						service.putExtra("cmd", "gps_on");
+						context.startService(service);
+						break;
 				}
 			} catch (IOException ex) {
 				Utils.handle(ex, context);

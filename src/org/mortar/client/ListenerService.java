@@ -14,70 +14,90 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 
 public class ListenerService extends Service implements LocationListener {
 	private static final int NOTIFIFACTION_ID = 1337;
 	private static final long LOC_MIN_TIME = 1 * 60 * 1000;
-	private static final long MAX_GPS_TIME = 3 * 60 * 1000;
-	private static final long SPIN_GPS_EVERY = 5 * 60 * 1000;
-	private static final float LOC_MIN_DIST = 0;
+	private static final long MAX_GPS_TIME = 10 * 1000;// 1 * 60 * 1000;
+	private static final long SPIN_GPS_EVERY = 10 * 1000;// 5 * 60 * 1000;
+	private static final float LOC_MIN_DIST = 5;
+	protected static final int GPS_ON = 1;
+	protected static final int GPS_OFF = 2;
 	private LocationManager locationManager;
-	private Runnable gpsOn = new Runnable() {
-		@Override
-		public void run() {
-			startGPS();
-			mainHandler.postDelayed(gpsOff, MAX_GPS_TIME);
-		}
-	};
-	private Runnable gpsOff = new Runnable() {
-		@Override
-		public void run() {
-			App app = (App) getApplication();
-			if(app.isCurrentLocationValid()) { 
-				stopGPS();
-				mainHandler.postDelayed(gpsOn, SPIN_GPS_EVERY);
-			}
-		}
-	};
 	private DBHelper db;
-	private Handler mainHandler;
+	private Handler handler;
+	private Location lastSavedLocation;
 
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
+	public void onCreate() {
+		super.onCreate();
 		Intent resultIntent = new Intent(this, LuncherActivity.class);
 		resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
 		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
-		Notification notification = new NotificationCompat.Builder(this)
-			.setContentIntent(resultPendingIntent)
-			.setSmallIcon(R.drawable.ic_launcher)
-			.setContentTitle("Mortar Client")
-			.build();
+		Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent)
+				.setSmallIcon(R.drawable.ic_launcher).setContentTitle("Mortar Client").build();
 		notification.flags |= Notification.FLAG_NO_CLEAR;
 		startForeground(NOTIFIFACTION_ID, notification);
-		
+
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		mainHandler = new Handler(getMainLooper());
+
+		handler = new Handler(getMainLooper()) {
+			@Override
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+					case GPS_OFF:
+						App app = (App) getApplication();
+						if (app.isCurrentLocationValid()) {
+							stopGPS();
+							handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), SPIN_GPS_EVERY);
+						}
+						return;
+					case GPS_ON:
+						startGPS();
+						return;
+				}
+			}
+		};
 
 		db = new DBHelper(this);
 		db.put("init");
 
-		gpsOn.run();
+		startGPS();
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		db.put("onStartCommand");
+		if ("gps_on".equals(intent.getStringExtra("cmd"))) {
+			startGPS();
+		}
 		return START_NOT_STICKY;
 	}
 
 	private void startGPS() {
 		db.put("start GPS");
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOC_MIN_TIME, LOC_MIN_DIST, this);
+		handler.removeMessages(GPS_OFF);
+		handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), MAX_GPS_TIME);
 	}
 
 	public void onLocationChanged(Location location) {
 		App app = (App) getApplication();
-		if(isBetterLocation(location, app.getCurrentBestLocation())) {
-			db.put(location);
+		if (isBetterLocation(location, app.getCurrentBestLocation())) {
 			app.setCurrentBestLocation(location);
+
+			if(lastSavedLocation != null) {
+				if(lastSavedLocation.distanceTo(location) < LOC_MIN_DIST) 
+					return; 
+				if((location.getTime() - lastSavedLocation.getTime())/1000 < LOC_MIN_TIME)
+					return;
+			}
+			lastSavedLocation = location;
+			db.put(location);
 		}
 	}
 
