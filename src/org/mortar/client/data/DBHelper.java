@@ -10,12 +10,12 @@ import android.location.Location;
 public class DBHelper extends SQLiteOpenHelper {
 
 	public DBHelper(Context context) {
-		super(context, "GpsLog", null, 2);
+		super(context, "GpsLog", null, 3);
 	}
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("create table location(lat real, lon real, timestamp integer)");
+		db.execSQL("create table location(lat real, lon real, timestamp integer, accuracy real, speed real, bearing real, sat integer)");
 		db.execSQL("create table log(msg text, timestamp integer)");
 	}
 
@@ -27,26 +27,31 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 
 	public void put(Location location) {
-		SQLiteDatabase db = getWritableDatabase();
 		ContentValues values = new ContentValues();
+
 		values.put("lat", location.getLatitude());
 		values.put("lon", location.getLongitude());
 		values.put("timestamp", location.getTime());
-		db.insert("location", null, values);
+		values.put("accuracy", location.getAccuracy());
+		values.put("altitude", location.getAltitude());
+		values.put("speed", location.getSpeed());
+		values.put("bearing", location.getBearing());
+		values.put("sat", location.getExtras().getInt("satellites"));
+
+		getWritableDatabase().insert("location", null, values);
 	}
 
 	public Cursor getLog(int limit) {
 		SQLiteDatabase db = getReadableDatabase();
-		String q = "SELECT lat||' '||lon, timestamp FROM location UNION SELECT msg,timestamp FROM log ORDER BY timestamp desc LIMIT " + limit;
+		String q = "SELECT substr(lat,8)||' '||substr(lon,8), timestamp FROM location UNION SELECT msg,timestamp FROM log ORDER BY timestamp desc LIMIT " + limit;
 		return db.rawQuery(q, null);
 	}
 
 	public void put(String string) {
-		SQLiteDatabase db = getWritableDatabase();
 		ContentValues values = new ContentValues();
 		values.put("msg", string);
 		values.put("timestamp", System.currentTimeMillis());
-		db.insert("log", null, values);
+		getWritableDatabase().insert("log", null, values);
 	}
 
 	public void reset() {
@@ -56,8 +61,8 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 
 	public Cursor getLocations() {
+		String[] columns = { "lat", "lon", "timestamp", "accuracy", "altitude", "speed", "bearing" };
 		SQLiteDatabase db = getReadableDatabase();
-		String[] columns = { "lat", "lon", "timestamp" };
 		return db.query("location", columns, null, null, null, null, "timestamp");
 	}
 }

@@ -30,6 +30,15 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 public class ViewLogActivity extends ActionBarActivity {
+	/** 
+	* Approximation factor for calculating Horizontal Dilution of Precision 
+	* from location.getAccuracy(). location.getAccuracy() returns an accuracy measured 
+	* in meters, and HDOP is obtained by dividing accuracy by this factor. 
+	* The value is totally false (!), but is still useful for certain use case like 
+	* track display in JOSM. 
+	* See: http://code.google.com/p/osmtracker-android/issues/detail?id=15 
+	*/ 
+	public final static int HDOP_APPROXIMATION_FACTOR = 4; 
 
 	private DBHelper db;
 
@@ -57,9 +66,10 @@ public class ViewLogActivity extends ActionBarActivity {
 			StringBuilder buf = new StringBuilder();
 			SimpleDateFormat fmt = new SimpleDateFormat("MM.dd HH:mm:ss", Locale.ENGLISH);
 			while (all.moveToNext()) {
-				String loc = all.getString(0);
+				String msg = all.getString(0);
 				long timestamp = all.getLong(1);
-				buf.append(fmt.format(new Date(timestamp))).append(" ").append(loc).append("\n");
+				String date = fmt.format(new Date(timestamp));
+				buf.append(date).append(" ").append(msg).append("\n");
 			}
 			TextView logView = (TextView) findViewById(R.id.logView);
 			logView.setText(buf);
@@ -149,9 +159,14 @@ public class ViewLogActivity extends ActionBarActivity {
 					double lat = all.getDouble(0);
 					double lon = all.getDouble(1);
 					long timestamp = all.getLong(2);
+					float accuracy = all.getFloat(3);
+					float altitude = all.getFloat(4);
+					float speed = all.getFloat(5);
+					float bearing = all.getFloat(6);
+					int sat = all.getInt(7);
 
 					String dateTime = dateTimeFmt.format(new Date(timestamp));
-					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime));
+					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing, accuracy, sat));
 				}
 				copyRawTemplateTo(R.raw.gpx_tail, out);
 			} finally {
@@ -178,7 +193,7 @@ public class ViewLogActivity extends ActionBarActivity {
 			if (args.length > 0) {
 				line = String.format(line, args);
 			}
-			out.append(line);
+			out.append(line).append("\n");
 		}
 	}
 

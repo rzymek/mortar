@@ -1,3 +1,8 @@
 	  <trkpt lat="%f" lon="%f">
         <time>%s</time>
-      </trkpt>        
+        <ele>%f</ele>
+        <speed>%f</speed>
+        <course>%f</couse>
+        <hdop>%f</hdop>
+        <sat>%d</sat>
+      </trkpt>
