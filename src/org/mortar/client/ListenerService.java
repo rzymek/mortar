@@ -18,17 +18,24 @@ import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 
 public class ListenerService extends Service implements LocationListener {
-	private static final int NOTIFIFACTION_ID = 1337;
-	private static final long LOC_MIN_TIME = 1 * 60 * 1000;
-	private static final long MAX_GPS_TIME = 10 * 1000;// 1 * 60 * 1000;
-	private static final long SPIN_GPS_EVERY = 10 * 1000;// 5 * 60 * 1000;
-	private static final float LOC_MIN_DIST = 5;
 	protected static final int GPS_ON = 61;
 	protected static final int GPS_OFF = 60;
+	private static final int NOTIFIFACTION_ID = 1337;
+	public static final String EXTRA_CONFIG = "config";
+
 	private LocationManager locationManager;
 	private DBHelper db;
 	private Handler handler;
 	private Location lastSavedLocation;
+	private Config config = new Config();
+
+	public void setConfig(Config config) {
+		this.config = config;
+		stopGPS();
+		handler.removeMessages(GPS_OFF);
+		handler.removeMessages(GPS_ON);
+		startGPS();
+	}
 
 	@Override
 	public void onCreate() {
@@ -45,18 +52,20 @@ public class ListenerService extends Service implements LocationListener {
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+		db = new DBHelper(this);
+
 		handler = new Handler(getMainLooper()) {
 			@Override
 			public void handleMessage(Message msg) {
-				db.put("handle:"+msg.what);
+				db.put("handle:" + msg.what);
 				switch (msg.what) {
 					case GPS_OFF:
 						App app = (App) getApplication();
 						if (app.isCurrentLocationValid()) {
 							stopGPS();
-							handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), SPIN_GPS_EVERY);
-						}else{
-							handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), MAX_GPS_TIME);							
+							handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), config.maxGpsDowntime);
+						} else {
+							handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
 						}
 						return;
 					case GPS_ON:
@@ -65,17 +74,16 @@ public class ListenerService extends Service implements LocationListener {
 				}
 			}
 		};
-
-		db = new DBHelper(this);
-		db.put("init");
-
-		startGPS();
+		db.put("created");
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		db.put("onStartCommand");
-		if ("gps_on".equals(intent.getStringExtra("cmd"))) {
+		Config config = (Config) intent.getSerializableExtra(EXTRA_CONFIG);
+		if (config != null) {
+			setConfig(config);
+		} else {
 			startGPS();
 		}
 		return START_NOT_STICKY;
@@ -83,9 +91,10 @@ public class ListenerService extends Service implements LocationListener {
 
 	private void startGPS() {
 		db.put("start GPS");
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOC_MIN_TIME, LOC_MIN_DIST, this);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, config.locationMinInterval,
+				config.locationMinDistance, this);
 		handler.removeMessages(GPS_OFF);
-		handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), MAX_GPS_TIME);
+		handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
 	}
 
 	public void onLocationChanged(Location location) {
@@ -93,10 +102,10 @@ public class ListenerService extends Service implements LocationListener {
 		if (isBetterLocation(location, app.getCurrentBestLocation())) {
 			app.setCurrentBestLocation(location);
 
-			if(lastSavedLocation != null) {
-				if(lastSavedLocation.distanceTo(location) < LOC_MIN_DIST) 
-					return; 
-				if (location.getTime() - lastSavedLocation.getTime() < LOC_MIN_TIME)
+			if (lastSavedLocation != null) {
+				if (lastSavedLocation.distanceTo(location) < config.locationMinDistance)
+					return;
+				if (location.getTime() - lastSavedLocation.getTime() < config.locationMinInterval)
 					return;
 			}
 			lastSavedLocation = location;

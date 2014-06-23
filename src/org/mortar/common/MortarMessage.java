@@ -11,7 +11,7 @@ import android.location.LocationManager;
 
 public class MortarMessage {
 	public static enum Type {
-		PREPARE, EXPLOSION
+		PREPARE, EXPLOSION, CONFIG
 	}
 
 	public final Type type;
