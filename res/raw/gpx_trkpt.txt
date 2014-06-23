@@ -5,4 +5,5 @@
         <course>%f</couse>
         <hdop>%f</hdop>
         <sat>%d</sat>
+        <src>%s</src>
       </trkpt>

@@ -13,6 +13,7 @@ public class Config implements Serializable {
 	public short locationMinDistance = 5;
 	public long maxGpsUptime = 3 * 60 * 1000;// 1 * 60 * 1000;
 	public long maxGpsDowntime = 5 * 60 * 1000;// 5 * 60 * 1000;
+	public long passiveLocationMinInterval = locationMinInterval;
 
 	public void serialize(OutputStream buf) throws IOException {
 		DataOutputStream out = new DataOutputStream(buf);

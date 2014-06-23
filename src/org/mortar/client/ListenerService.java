@@ -2,12 +2,15 @@ package org.mortar.client;
 
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.data.DBHelper;
+import org.mortar.common.Utils;
 
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -42,30 +45,58 @@ public class ListenerService extends Service implements LocationListener {
 		super.onCreate();
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, config.passiveLocationMinInterval, config.locationMinDistance, this);
+		try {
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, config.locationMinInterval, config.locationMinDistance, this);
+		}catch(Exception ex){
+			Utils.handle(ex, getApplicationContext());
+		}
 
 		db = new DBHelper(this);
 
 		handler = new Handler(getMainLooper()) {
 			@Override
 			public void handleMessage(Message msg) {
-				db.put("handle:" + msg.what);
 				switch (msg.what) {
-					case GPS_OFF:
-						App app = (App) getApplication();
-						if (app.isCurrentLocationValid()) {
-							stopGPS();
-							handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), config.maxGpsDowntime);
-						} else {
-							handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
-						}
-						return;
-					case GPS_ON:
-						startGPS();
-						return;
+				case GPS_OFF:
+					App app = (App) getApplication();
+					if (app.isCurrentLocationValid()) {
+						stopGPS();
+						handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), config.maxGpsDowntime);
+					} else {
+						handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
+					}
+					return;
+				case GPS_ON:
+					startGPS();
+					return;
 				}
 			}
 		};
+
+		registerScreenReceiver();
+
 		db.put("created");
+	}
+
+	private void registerScreenReceiver() {
+		final IntentFilter theFilter = new IntentFilter();
+		theFilter.addAction(Intent.ACTION_SCREEN_ON);
+		theFilter.addAction(Intent.ACTION_SCREEN_OFF);
+
+		BroadcastReceiver screenReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				String action = intent.getAction();
+				db.put(action);
+				if (action.equals(Intent.ACTION_SCREEN_OFF)) {
+					stopGPS();
+				} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
+					startGPS();
+				}
+			}
+		};
+		getApplicationContext().registerReceiver(screenReceiver, theFilter);
 	}
 
 	@Override
@@ -79,8 +110,8 @@ public class ListenerService extends Service implements LocationListener {
 			resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
 			resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 			PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
-			Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent)
-					.setSmallIcon(R.drawable.ic_launcher).setContentTitle("Mortar Client").build();
+			Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent).setSmallIcon(R.drawable.ic_launcher)
+					.setContentTitle("Mortar Client").build();
 			notification.flags |= Notification.FLAG_NO_CLEAR;
 			startForeground(NOTIFIFACTION_ID, notification);
 
@@ -91,9 +122,7 @@ public class ListenerService extends Service implements LocationListener {
 
 	private void startGPS() {
 		db.put("start GPS");
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
-				config.locationMinInterval,
-				config.locationMinDistance, this);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, config.locationMinInterval, config.locationMinDistance, this);
 		handler.removeMessages(GPS_ON);
 		handler.removeMessages(GPS_OFF);
 		handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);

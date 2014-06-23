@@ -18,6 +18,8 @@ import org.mortar.client.data.DBHelper;
 import org.mortar.common.Utils;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -164,6 +166,7 @@ public class ViewLogActivity extends ActionBarActivity {
 					float speed = all.getFloat(5);
 					float bearing = all.getFloat(6);
 					int sat = all.getInt(7);
+					String provider = all.getString(8);
 
 					String dateTime = dateTimeFmt.format(new Date(timestamp));
 					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing, accuracy, sat));

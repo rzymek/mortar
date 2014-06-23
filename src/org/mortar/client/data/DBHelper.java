@@ -10,12 +10,13 @@ import android.location.Location;
 public class DBHelper extends SQLiteOpenHelper {
 
 	public DBHelper(Context context) {
-		super(context, "GpsLog", null, 3);
+		super(context, "GpsLog", null, 5);
 	}
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("create table location(lat real, lon real, timestamp integer, accuracy real, speed real, bearing real, sat integer)");
+		db.execSQL("create table location(lat real, lon real, timestamp integer, accuracy real,"
+				+ "altitude real, speed real, bearing real, sat integer, provider text)");
 		db.execSQL("create table log(msg text, timestamp integer)");
 	}
 
@@ -37,6 +38,7 @@ public class DBHelper extends SQLiteOpenHelper {
 		values.put("speed", location.getSpeed());
 		values.put("bearing", location.getBearing());
 		values.put("sat", location.getExtras().getInt("satellites"));
+		values.put("provider", location.getProvider());
 
 		getWritableDatabase().insert("location", null, values);
 	}
@@ -61,7 +63,7 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 
 	public Cursor getLocations() {
-		String[] columns = { "lat", "lon", "timestamp", "accuracy", "altitude", "speed", "bearing" };
+		String[] columns = { "lat", "lon", "timestamp", "accuracy", "altitude", "speed", "bearing","provider" };
 		SQLiteDatabase db = getReadableDatabase();
 		return db.query("location", columns, null, null, null, null, "timestamp");
 	}
