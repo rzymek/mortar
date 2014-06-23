@@ -91,7 +91,8 @@ public class ListenerService extends Service implements LocationListener {
 
 	private void startGPS() {
 		db.put("start GPS");
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, config.locationMinInterval,
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
+				config.locationMinInterval,
 				config.locationMinDistance, this);
 		handler.removeMessages(GPS_OFF);
 		handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
