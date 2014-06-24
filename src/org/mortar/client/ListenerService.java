@@ -51,9 +51,9 @@ public class ListenerService extends Service {
 				app.setCurrentBestLocation(location);
 
 				if (lastSavedLocation != null) {
-					if (lastSavedLocation.distanceTo(location) < config.get(LOCATION_MIN_DISTANCE))
+					if (lastSavedLocation.distanceTo(location) < config.milis(LOCATION_MIN_DISTANCE))
 						return;
-					if (location.getTime() - lastSavedLocation.getTime() < config.get(PASSIVE_LOCATION_MIN_INTERVAL))
+					if (location.getTime() - lastSavedLocation.getTime() < config.milis(PASSIVE_LOCATION_MIN_INTERVAL))
 						return;
 				}
 				lastSavedLocation = location;
@@ -166,8 +166,8 @@ public class ListenerService extends Service {
 			setGpsDelayed(GPS_OFF, config.getGpsUptime());
 		}
 
-		int minTime = config.get(LOCATION_MIN_INTERVAL);
-		int distance = config.get(LOCATION_MIN_DISTANCE);
+		long minTime = config.milis(LOCATION_MIN_INTERVAL);
+		long distance = config.milis(LOCATION_MIN_DISTANCE);
 		locationManager.requestLocationUpdates(GPS_PROVIDER, minTime, distance, gpsListener);
 	}
 
@@ -186,9 +186,9 @@ public class ListenerService extends Service {
 	private void registerOtherLocationProviders() {
 		try {
 			locationManager.removeUpdates(otherProvidersListener);
-			long passiveMinTime = config.get(PASSIVE_LOCATION_MIN_INTERVAL);
-			long networkMinTime = config.get(LOCATION_MIN_INTERVAL);
-			float minDistance = config.get(LOCATION_MIN_DISTANCE);
+			long passiveMinTime = config.milis(PASSIVE_LOCATION_MIN_INTERVAL);
+			long networkMinTime = config.milis(LOCATION_MIN_INTERVAL);
+			float minDistance = config.milis(LOCATION_MIN_DISTANCE);
 			locationManager.requestLocationUpdates(PASSIVE_PROVIDER, passiveMinTime, minDistance, otherProvidersListener);
 			locationManager.requestLocationUpdates(NETWORK_PROVIDER, networkMinTime, minDistance, otherProvidersListener);
 		} catch (Exception ex) {

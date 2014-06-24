@@ -5,6 +5,7 @@ import org.mortar.client.Pref.Read;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -22,20 +23,33 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 		super.onCreate(savedInstanceState);
 		PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(this);
 		config = new Pref.Read(this);
-		for (Pref key : Pref.values()) {
+		for (final Pref key : Pref.values()) {
 			Preference item;
 			if (key.type.equals(Boolean.class)) {
-				item = new CheckBoxPreference(this);
+				item = new CheckBoxPreference(this){
+					@Override
+					protected Object onGetDefaultValue(TypedArray a, int index) {
+						return a.getBoolean(index, (boolean) key.defValue);
+					}
+				};
 			} else if (key.type.equals(Integer.class)) {
 				EditTextPreference textItem = new EditTextPreference(this) {
 					@Override
 					protected boolean persistString(String value) {
-						return persistInt(Integer.parseInt(value));
+						try {
+							return persistInt(Integer.parseInt(value));
+						}catch(NumberFormatException ex){
+							return false;
+						}
 					}
 
 					@Override
 					protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
 						setText(restoreValue ? "" + getPersistedInt(0) : (String) defaultValue);
+					}
+					@Override
+					protected Object onGetDefaultValue(TypedArray a, int index) {
+						return a.getInteger(index, (int) key.defValue);
 					}
 				};
 				textItem.getEditText().setInputType(EditorInfo.TYPE_CLASS_NUMBER);

@@ -10,24 +10,26 @@ import android.preference.PreferenceManager;
 
 public enum Pref {
 	//@formatter:off
-	LOCATION_MIN_INTERVAL, 
-	LOCATION_MIN_DISTANCE, 
-	MAX_GPS_UPTIME, 
-	MAX_GPS_DOWNTIME, 
-	PASSIVE_LOCATION_MIN_INTERVAL, 
-	MIN_GPS_UPTIME, 
-	MIN_GPS_DOWNTIME, 
-	SCREEN_GPS_CONTROL(Boolean.class);
+	LOCATION_MIN_INTERVAL(5), 
+	LOCATION_MIN_DISTANCE(5), 
+	MAX_GPS_UPTIME(3), 
+	MAX_GPS_DOWNTIME(5), 
+	PASSIVE_LOCATION_MIN_INTERVAL(1), 
+	MIN_GPS_UPTIME(1), 
+	MIN_GPS_DOWNTIME(1), 
+	SCREEN_GPS_CONTROL(true);
 	//@formatter:on
 
 	public final Class<?> type;
+	public final Object defValue;
 
-	private Pref() {
-		this(Integer.class);
+	private Pref(int defValue) {
+		this.type = Integer.class;
+		this.defValue = defValue;
 	}
-
-	private Pref(Class<?> type) {
-		this.type = type;
+	private Pref(boolean defValue) {
+		this.type = Boolean.class;
+		this.defValue = defValue;
 	}
 
 	public static class Read {
@@ -38,11 +40,15 @@ public enum Pref {
 		}
 
 		public int get(Pref key) {
-			return shared.getInt(key.name(), 0);
+			return shared.getInt(key.name(), (int) key.defValue);
+		}
+		
+		public long milis(Pref key) {
+			return get(key) * 60L * 1000L;
 		}
 
 		public boolean is(Pref key) {
-			return shared.getBoolean(key.name(), false);
+			return shared.getBoolean(key.name(), (boolean) key.defValue);
 		}
 
 		public void serialize(OutputStream buf) throws IOException {
@@ -59,11 +65,11 @@ public enum Pref {
 		}
 
 		public long getGpsUptime() {
-			return get(Pref.MAX_GPS_UPTIME);
+			return milis(Pref.MAX_GPS_UPTIME);
 		}
 
 		public long getGpsDowntime() {
-			return get(Pref.MAX_GPS_DOWNTIME);
+			return milis(Pref.MAX_GPS_DOWNTIME);
 		}
 
 	}
