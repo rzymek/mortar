@@ -45,7 +45,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
 	public Cursor getLog(int limit) {
 		SQLiteDatabase db = getReadableDatabase();
-		String q = "SELECT substr(lat,8)||' '||substr(lon,8), timestamp FROM location UNION SELECT msg,timestamp FROM log ORDER BY timestamp desc LIMIT " + limit;
+		String q = "SELECT substr(lat,0,10)||' '||substr(lon,0,10)||';'||sat,"
+				+ " timestamp FROM location UNION SELECT msg,timestamp FROM log ORDER BY timestamp desc LIMIT " + limit;
 		return db.rawQuery(q, null);
 	}
 

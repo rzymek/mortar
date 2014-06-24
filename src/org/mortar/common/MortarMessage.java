@@ -48,11 +48,10 @@ public class MortarMessage {
 		Type type = Type.values()[in.readByte()];
 		MortarMessage message = new MortarMessage(type);
 		if (type == Type.EXPLOSION) {
-			Location location = new Location(LocationManager.GPS_PROVIDER);
-
-			location.setLatitude(in.readDouble());
-			location.setLongitude(in.readDouble());
-			location.setTime(in.readLong());
+			message.location = new Location(LocationManager.GPS_PROVIDER);
+			message.location.setLatitude(in.readDouble());
+			message.location.setLongitude(in.readDouble());
+			message.location.setTime(in.readLong());
 			message.killZoneDiameter = in.readShort();
 			message.warrningDiameter = in.readShort();
 		}
