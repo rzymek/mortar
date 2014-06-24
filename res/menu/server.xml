@@ -6,13 +6,19 @@
     <item
         android:id="@+id/menu_server_send"
         android:icon="@android:drawable/ic_menu_send"
-        android:orderInCategory="100"
+        android:orderInCategory="120"
         android:title="Send config"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/menu_server_config"
-        android:orderInCategory="100"
+        android:orderInCategory="110"
         android:title="Config"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_server_numbers"
+        android:orderInCategory="105"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:title="Target numbers"
+        app:showAsAction="ifRoom"/>
     
 </menu>

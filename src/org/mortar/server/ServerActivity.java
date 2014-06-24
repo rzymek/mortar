@@ -220,6 +220,9 @@ public class ServerActivity extends Activity {
 		} else if (id == R.id.menu_server_send) {
 			MortarMessage msg = new MortarMessage(Type.CONFIG);
 			broadcast(msg);
+		} else if (id == R.id.menu_server_numbers) {
+			startActivity(new Intent(this, NumberListActivity.class));
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
