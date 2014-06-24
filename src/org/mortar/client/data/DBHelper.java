@@ -50,7 +50,7 @@ public class DBHelper extends SQLiteOpenHelper {
 		return db.rawQuery(q, null);
 	}
 
-	public void put(String string) {
+	public void log(String string) {
 		ContentValues values = new ContentValues();
 		values.put("msg", string);
 		values.put("timestamp", System.currentTimeMillis());

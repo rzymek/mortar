@@ -34,7 +34,7 @@ public class SMSReceiver extends BroadcastReceiver {
 						break;
 					case PREPARE:
 						Intent prepare = new Intent(context, ListenerService.class);
-						prepare.putExtra(ListenerService.EXTRA_ACTIVE_MINUTES, 10);
+						prepare.putExtra(ListenerService.EXTRA_HIGH_ALERT, 10);
 						context.startService(prepare);
 						break;
 					case CONFIG:
