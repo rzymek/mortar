@@ -26,7 +26,7 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 		for (final Pref key : Pref.values()) {
 			Preference item;
 			if (key.type.equals(Boolean.class)) {
-				item = new CheckBoxPreference(this){
+				item = new CheckBoxPreference(this) {
 					@Override
 					protected Object onGetDefaultValue(TypedArray a, int index) {
 						return a.getBoolean(index, (boolean) key.defValue);
@@ -38,7 +38,7 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 					protected boolean persistString(String value) {
 						try {
 							return persistInt(Integer.parseInt(value));
-						}catch(NumberFormatException ex){
+						} catch (NumberFormatException ex) {
 							return false;
 						}
 					}
@@ -47,6 +47,7 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 					protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
 						setText(restoreValue ? "" + getPersistedInt(0) : (String) defaultValue);
 					}
+
 					@Override
 					protected Object onGetDefaultValue(TypedArray a, int index) {
 						return a.getInteger(index, (int) key.defValue);

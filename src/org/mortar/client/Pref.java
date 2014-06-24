@@ -1,5 +1,6 @@
 package org.mortar.client;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,7 +52,8 @@ public enum Pref {
 			return shared.getBoolean(key.name(), (boolean) key.defValue);
 		}
 
-		public void serialize(OutputStream buf) throws IOException {
+		public byte[] serialize() throws IOException {
+			ByteArrayOutputStream buf = new ByteArrayOutputStream();
 			DataOutputStream out = new DataOutputStream(buf);
 			for (Pref key : values()) {
 				if (key.type.equals(Integer.class)) {
@@ -62,6 +64,7 @@ public enum Pref {
 					throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
 				}
 			}
+			return buf.toByteArray();
 		}
 
 		public long getGpsUptime() {

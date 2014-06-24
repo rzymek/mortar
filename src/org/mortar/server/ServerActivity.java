@@ -29,6 +29,8 @@ import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -177,8 +179,8 @@ public class ServerActivity extends Activity {
 				intent.putExtra("mortar", msg);
 				sendBroadcast(intent);
 			}
-			final SmsManager smsManager = SmsManager.getDefault();
 			final byte[] userData = message.serialize();
+			final SmsManager smsManager = SmsManager.getDefault();
 			for (String phone : clients) {
 				clientStatus.put(phone, "sending");
 				updateStatus();
@@ -200,6 +202,26 @@ public class ServerActivity extends Activity {
 		message.killZoneDiameter = Integer.parseInt(killZoneDiameterText.getText().toString());
 		message.warrningDiameter = Integer.parseInt(warrningDiameterText.getText().toString());
 		return message;
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.server, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		if (id == R.id.menu_server_config) {
+			startActivity(new Intent(this, ConfigActivity.class));
+			return true;
+		} else if (id == R.id.menu_server_send) {
+			MortarMessage msg = new MortarMessage(Type.CONFIG);
+			broadcast(msg);
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 }
