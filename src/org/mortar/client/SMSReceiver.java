@@ -1,6 +1,5 @@
 package org.mortar.client;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import org.mortar.client.data.MergedMessage;
@@ -18,31 +17,33 @@ public class SMSReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Bundle bundle = intent.getExtras();
 		if (bundle != null) {
-			try {				
+			try {
 				App app = (App) context.getApplicationContext();
-				
+
 				MergedMessage msg = MergedMessage.createFromBundle(bundle);
-				if(msg == null)
+				if (msg == null)
 					msg = (MergedMessage) bundle.getSerializable("mortar");
-				
+
 				MortarMessage.Type type = getType(msg.contents);
 				Utils.toast(type.name(), context);
 				switch (type) {
-					case EXPLOSION:
-						MortarMessage info = MortarMessage.deserialize(msg.contents);
-						app.explosionEvent(info, msg.from);
-						break;
-					case PREPARE:
-						Intent prepare = new Intent(context, ListenerService.class);
-						prepare.putExtra(ListenerService.EXTRA_HIGH_ALERT, 10);
-						context.startService(prepare);
-						break;
-					case CONFIG:
-						ByteArrayInputStream buf = new ByteArrayInputStream(msg.contents, 1, msg.contents.length - 1);
-						Intent cmd = new Intent(context, ListenerService.class);
-						cmd.putExtra(ListenerService.EXTRA_CONFIG, Config.deserialize(buf));
-						context.startService(cmd);
-						break;
+				case EXPLOSION:
+					MortarMessage info = MortarMessage.deserialize(msg.contents);
+					app.explosionEvent(info, msg.from);
+					break;
+				case PREPARE:
+					Intent prepare = new Intent(context, ListenerService.class);
+					prepare.putExtra(ListenerService.EXTRA_HIGH_ALERT, 10);
+					context.startService(prepare);
+					break;
+				case CONFIG:
+//					ByteArrayInputStream buf = new ByteArrayInputStream(msg.contents, 1, msg.contents.length - 1);
+					//continue to RELOAD
+				case RELOAD:
+					Intent cmd = new Intent(context, ListenerService.class);
+					cmd.putExtra(ListenerService.EXTRA_RELOAD, true);
+					context.startService(cmd);
+					break;
 				}
 			} catch (IOException ex) {
 				Utils.handle(ex, context);

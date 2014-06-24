@@ -10,7 +10,7 @@ import android.location.Location;
 public class DBHelper extends SQLiteOpenHelper {
 
 	public DBHelper(Context context) {
-		super(context, "GpsLog", null, 5);
+		super(context, "GpsLog", null, 6);
 	}
 
 	@Override

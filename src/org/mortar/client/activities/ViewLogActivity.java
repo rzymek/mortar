@@ -18,8 +18,6 @@ import org.mortar.client.data.DBHelper;
 import org.mortar.common.Utils;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -140,7 +138,7 @@ public class ViewLogActivity extends ActionBarActivity {
 
 	@SuppressLint("WorldReadableFiles")
 	private File exportGPX() throws IOException {
-		Cursor all = db.getLocations();
+		Cursor row = db.getLocations();
 		File outDir = new File(Environment.getExternalStorageDirectory(),"mortar");
 		outDir.mkdirs();
 		try {
@@ -157,19 +155,19 @@ public class ViewLogActivity extends ActionBarActivity {
 			try {
 				copyRawTemplateTo(R.raw.gpx_head, out, nameFmt.format(now));
 				String trkpt = getRawTemplate(R.raw.gpx_trkpt);
-				while (all.moveToNext()) {
-					double lat = all.getDouble(0);
-					double lon = all.getDouble(1);
-					long timestamp = all.getLong(2);
-					float accuracy = all.getFloat(3);
-					float altitude = all.getFloat(4);
-					float speed = all.getFloat(5);
-					float bearing = all.getFloat(6);
-					int sat = all.getInt(7);
-					String provider = all.getString(8);
+				while (row.moveToNext()) {
+					double lat = row.getDouble(0);
+					double lon = row.getDouble(1);
+					long timestamp = row.getLong(2);
+					float accuracy = row.getFloat(3);
+					float altitude = row.getFloat(4);
+					float speed = row.getFloat(5);
+					float bearing = row.getFloat(6);
+					int sat = row.getInt(7);
+					String provider = row.getString(8);
 
 					String dateTime = dateTimeFmt.format(new Date(timestamp));
-					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing, accuracy, sat));
+					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing, accuracy, sat, provider));
 				}
 				copyRawTemplateTo(R.raw.gpx_tail, out);
 			} finally {
@@ -178,7 +176,7 @@ public class ViewLogActivity extends ActionBarActivity {
 			}
 			return file;
 		} finally {
-			all.close();
+			row.close();
 		}
 	}
 

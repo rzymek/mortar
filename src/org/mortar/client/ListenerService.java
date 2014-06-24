@@ -1,5 +1,7 @@
 package org.mortar.client;
 
+import org.mortar.client.Pref.Read;
+import static org.mortar.client.Pref.*;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.data.DBHelper;
 import org.mortar.common.Utils;
@@ -24,18 +26,21 @@ public class ListenerService extends Service {
 	protected static final int GPS_ON = 61;
 	protected static final int GPS_OFF = 60;
 	protected static final int LOW_ALERT = 66;
+
 	private static final int NOTIFIFACTION_ID = 1337;
+
 	public static final String EXTRA_CONFIG = "config";
 	public static final String EXTRA_HIGH_ALERT = "high alert (min)";
+	public static final String EXTRA_RELOAD = "reload";
 
 	private LocationManager locationManager;
 	private DBHelper db;
 	private Handler handler;
 	private Location lastSavedLocation;
-	private Config config;
+	private Read config;
 	private boolean highAlert = false;
 
-	//========================================================================================================
+	// ========================================================================================================
 
 	private LocationListener gpsListener = new AbstractLocationListener() {
 		@Override
@@ -46,9 +51,9 @@ public class ListenerService extends Service {
 				app.setCurrentBestLocation(location);
 
 				if (lastSavedLocation != null) {
-					if (lastSavedLocation.distanceTo(location) < config.locationMinDistance)
+					if (lastSavedLocation.distanceTo(location) < config.get(LOCATION_MIN_DISTANCE))
 						return;
-					if (location.getTime() - lastSavedLocation.getTime() < config.passiveLocationMinInterval)
+					if (location.getTime() - lastSavedLocation.getTime() < config.get(PASSIVE_LOCATION_MIN_INTERVAL))
 						return;
 				}
 				lastSavedLocation = location;
@@ -56,7 +61,7 @@ public class ListenerService extends Service {
 			}
 		}
 	};
-	
+
 	private LocationListener otherProvidersListener = new AbstractLocationListener() {
 		@Override
 		public void onLocationChanged(Location location) {
@@ -76,12 +81,14 @@ public class ListenerService extends Service {
 			}
 		}
 	};
-	
-	//========================================================================================================
+
+	// ========================================================================================================
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		config = new Pref.Read(this);
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -112,9 +119,8 @@ public class ListenerService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		db.log("onStartCommand");
-		Config config = (Config) intent.getSerializableExtra(EXTRA_CONFIG);
-		if (config != null) {
-			setConfig(config);
+		if (intent.getBooleanExtra(EXTRA_RELOAD, false)) {
+			reload();
 			return START_NOT_STICKY;
 		}
 
@@ -129,7 +135,7 @@ public class ListenerService extends Service {
 
 		if (config == null) {
 			// defaults:
-			setConfig(new Config());
+			// setConfig(new Config());
 		}
 
 		startNotification();
@@ -152,7 +158,7 @@ public class ListenerService extends Service {
 		startForeground(NOTIFIFACTION_ID, notification);
 	}
 
-	//========================================================================================================
+	// ========================================================================================================
 
 	private void startGPS() {
 		db.log("start GPS " + (highAlert ? "!!!" : ""));
@@ -160,7 +166,9 @@ public class ListenerService extends Service {
 			setGpsDelayed(GPS_OFF, config.getGpsUptime());
 		}
 
-		locationManager.requestLocationUpdates(GPS_PROVIDER, config.locationMinInterval, config.locationMinDistance, gpsListener);
+		int minTime = config.get(LOCATION_MIN_INTERVAL);
+		int distance = config.get(LOCATION_MIN_DISTANCE);
+		locationManager.requestLocationUpdates(GPS_PROVIDER, minTime, distance, gpsListener);
 	}
 
 	private void stopGPS() {
@@ -173,13 +181,16 @@ public class ListenerService extends Service {
 		locationManager.removeUpdates(gpsListener);
 	}
 
-	//========================================================================================================
+	// ========================================================================================================
 
 	private void registerOtherLocationProviders() {
 		try {
 			locationManager.removeUpdates(otherProvidersListener);
-			locationManager.requestLocationUpdates(PASSIVE_PROVIDER, config.passiveLocationMinInterval, config.locationMinDistance, otherProvidersListener);
-			locationManager.requestLocationUpdates(NETWORK_PROVIDER, config.locationMinInterval, config.locationMinDistance, otherProvidersListener);
+			long passiveMinTime = config.get(PASSIVE_LOCATION_MIN_INTERVAL);
+			long networkMinTime = config.get(LOCATION_MIN_INTERVAL);
+			float minDistance = config.get(LOCATION_MIN_DISTANCE);
+			locationManager.requestLocationUpdates(PASSIVE_PROVIDER, passiveMinTime, minDistance, otherProvidersListener);
+			locationManager.requestLocationUpdates(NETWORK_PROVIDER, networkMinTime, minDistance, otherProvidersListener);
 		} catch (Exception ex) {
 			// emulator does not support NETWORK_PROVIDER.
 			Utils.handle(ex, getApplicationContext());
@@ -189,23 +200,22 @@ public class ListenerService extends Service {
 	private void registerScreenListener() {
 		try {
 			getApplicationContext().unregisterReceiver(screenReceiver);
-		}catch(IllegalArgumentException e) {
-			//not registered - ignore
+		} catch (IllegalArgumentException e) {
+			// not registered - ignore
 		}
 		final IntentFilter theFilter = new IntentFilter();
 		theFilter.addAction(Intent.ACTION_SCREEN_ON);
 		theFilter.addAction(Intent.ACTION_SCREEN_OFF);
-		
-		if(config.screenGpsControl) {
+
+		if (config.is(SCREEN_GPS_CONTROL)) {
 			getApplicationContext().registerReceiver(screenReceiver, theFilter);
 		}
 	}
 
-	public void setConfig(Config config) {
-		this.config = config;
+	public void reload() {
 		highAlert = false;
 		stopGPS();
-		
+
 		registerScreenListener();
 		registerOtherLocationProviders();
 
@@ -218,6 +228,7 @@ public class ListenerService extends Service {
 		handler.sendMessageDelayed(handler.obtainMessage(what), when);
 
 	}
+
 	private void clearHandlerMessages() {
 		handler.removeMessages(GPS_OFF);
 		handler.removeMessages(GPS_ON);

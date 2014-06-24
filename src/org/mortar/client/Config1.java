@@ -7,10 +7,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-public class Config implements Serializable {
-	private static final long serialVersionUID = 1L;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
-	public int locationMinInterval = 5 * 60 * 1000;
+public class Config1 implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private Context ctx;
+	private SharedPreferences shared;
+	public static enum Key {
+		LOCATION_MIN_INVERAL
+	}
+	
+
+	private int locationMinInterval = 5 * 60 * 1000;
 	public short locationMinDistance = 5;
 	public int maxGpsUptime = 3 * 60 * 1000;// 1 * 60 * 1000;
 	public int maxGpsDowntime = 5 * 60 * 1000;// 5 * 60 * 1000;
@@ -21,20 +31,24 @@ public class Config implements Serializable {
 
 	public void serialize(OutputStream buf) throws IOException {
 		DataOutputStream out = new DataOutputStream(buf);
-		out.writeInt(locationMinInterval);
+		out.writeInt(getLocationMinInterval());
 		out.writeShort(locationMinDistance);
 		out.writeInt(maxGpsUptime);
 		out.writeInt(maxGpsDowntime);
 	}
 
-	public static Config deserialize(InputStream buf) throws IOException {
+	public static Config1 deserialize(InputStream buf) throws IOException {
 		DataInputStream in = new DataInputStream(buf);
-		Config config = new Config();
-		config.locationMinInterval = in.readInt();
+		Config1 config = new Config1();
+		config.setLocationMinInterval(in.readInt());
 		config.locationMinDistance = in.readShort();
 		config.maxGpsUptime = in.readInt();
 		config.maxGpsDowntime = in.readInt();
 		return config;
+	}
+	
+	public int get(Key key) {
+		return shared.getInt(key.name(), 0);
 	}
 
 	public long getGpsUptime() {
@@ -43,5 +57,13 @@ public class Config implements Serializable {
 
 	public long getGpsDowntime() {
 		return maxGpsDowntime;
+	}
+
+	public int getLocationMinInterval() {		
+		return locationMinInterval;
+	}
+
+	public void setLocationMinInterval(int locationMinInterval) {
+		this.locationMinInterval = locationMinInterval;
 	}
 }
