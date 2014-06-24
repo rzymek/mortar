@@ -14,13 +14,12 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 
-public class ListenerService extends Service implements LocationListener {
+public class ListenerService extends Service {
 	protected static final int GPS_ON = 61;
 	protected static final int GPS_OFF = 60;
 	protected static final int LOW_ALERT = 66;
@@ -34,6 +33,32 @@ public class ListenerService extends Service implements LocationListener {
 	private Location lastSavedLocation;
 	private Config config = new Config();
 	private boolean highAlert = false;
+
+	private LocationListener gpsListener = new AbstractLocationListener() {
+		@Override
+		public void onLocationChanged(Location location) {
+			App app = (App) getApplication();
+			if (isBetterLocation(location, app.getCurrentBestLocation())) {
+				app.setCurrentBestLocation(location);
+
+				if (lastSavedLocation != null) {
+					if (lastSavedLocation.distanceTo(location) < config.locationMinDistance)
+						return;
+					if (location.getTime() - lastSavedLocation.getTime() < config.passiveLocationMinInterval)
+						return;
+				}
+				lastSavedLocation = location;
+				db.put(location);
+			}
+		}
+	};
+	private LocationListener otherProvidersListener = new AbstractLocationListener() {
+
+		@Override
+		public void onLocationChanged(Location location) {
+			gpsListener.onLocationChanged(location);
+		}
+	};
 
 	public void setConfig(Config config) {
 		this.config = config;
@@ -53,10 +78,12 @@ public class ListenerService extends Service implements LocationListener {
 		super.onCreate();
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, config.passiveLocationMinInterval, config.locationMinDistance, this);
+		locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, config.passiveLocationMinInterval,
+				config.locationMinDistance, otherProvidersListener);
 		try {
-			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, config.locationMinInterval, config.locationMinDistance, this);
-		}catch(Exception ex){
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, config.locationMinInterval,
+					config.locationMinDistance, otherProvidersListener);
+		} catch (Exception ex) {
 			Utils.handle(ex, getApplicationContext());
 		}
 
@@ -67,20 +94,20 @@ public class ListenerService extends Service implements LocationListener {
 			public void handleMessage(Message msg) {
 				clearHandlerMessages();
 				switch (msg.what) {
-				case LOW_ALERT:
-					highAlert = false;
-				case GPS_OFF:
-					App app = (App) getApplication();
-					if (app.isCurrentLocationValid()) {
-						stopGPS();
-						handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), config.maxGpsDowntime);
-					} else {
-						handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
-					}
-					return;
-				case GPS_ON:
-					startGPS();
-					return;
+					case LOW_ALERT:
+						highAlert = false;
+					case GPS_OFF:
+						App app = (App) getApplication();
+						if (app.isCurrentLocationValid()) {
+							stopGPS();
+							handler.sendMessageDelayed(handler.obtainMessage(GPS_ON), config.maxGpsDowntime);
+						} else {
+							handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
+						}
+						return;
+					case GPS_ON:
+						startGPS();
+						return;
 				}
 			}
 		};
@@ -118,21 +145,22 @@ public class ListenerService extends Service implements LocationListener {
 			setConfig(config);
 			return START_NOT_STICKY;
 		}
-		
+
 		int forceActive = intent.getIntExtra(EXTRA_ACTIVE_MINUTES, -1);
-		if(forceActive > 0) {
+		if (forceActive > 0) {
 			highAlert = true;
 			clearHandlerMessages();
 			handler.sendMessageDelayed(handler.obtainMessage(LOW_ALERT), forceActive * 60 * 1000);
 			startGPS();
 			return START_NOT_STICKY;
 		}
+
 		Intent resultIntent = new Intent(this, LuncherActivity.class);
 		resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
 		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, 0/* flags */);
-		Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent).setSmallIcon(R.drawable.ic_launcher)
-				.setContentTitle("Mortar Client").build();
+		Notification notification = new NotificationCompat.Builder(this).setContentIntent(resultPendingIntent)
+				.setSmallIcon(R.drawable.ic_launcher).setContentTitle("Mortar Client").build();
 		notification.flags |= Notification.FLAG_NO_CLEAR;
 		startForeground(NOTIFIFACTION_ID, notification);
 
@@ -141,27 +169,15 @@ public class ListenerService extends Service implements LocationListener {
 	}
 
 	private void startGPS() {
-		db.put("start GPS "+(highAlert?"!!!":""));
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, config.locationMinInterval, config.locationMinDistance, this);
-		handler.removeMessages(GPS_ON);
-		handler.removeMessages(GPS_OFF);
-		handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
-	}
-
-	public void onLocationChanged(Location location) {
-		App app = (App) getApplication();
-		if (isBetterLocation(location, app.getCurrentBestLocation())) {
-			app.setCurrentBestLocation(location);
-
-			if (lastSavedLocation != null) {
-				if (lastSavedLocation.distanceTo(location) < config.locationMinDistance)
-					return;
-				if (location.getTime() - lastSavedLocation.getTime() < config.locationMinInterval)
-					return;
-			}
-			lastSavedLocation = location;
-			db.put(location);
+		db.put("start GPS " + (highAlert ? "!!!" : ""));
+		if(!highAlert) {
+			handler.removeMessages(GPS_ON);
+			handler.removeMessages(GPS_OFF);
+			handler.sendMessageDelayed(handler.obtainMessage(GPS_OFF), config.maxGpsUptime);
 		}
+
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, config.locationMinInterval,
+				config.locationMinDistance, gpsListener);
 	}
 
 	@Override
@@ -170,33 +186,22 @@ public class ListenerService extends Service implements LocationListener {
 		db.put("listener destroy");
 		db.close();
 		stopForeground(true);
-		locationManager.removeUpdates(this);
+		highAlert = false;
+		stopGPS();
 	}
 
 	private void stopGPS() {
-		if(highAlert){
+		if (highAlert) {
 			db.put("ignoring stop GPS (high alert)");
 			return;
 		}
 		db.put("stop GPS");
-		locationManager.removeUpdates(this);
+		locationManager.removeUpdates(gpsListener);
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return (null);
-	}
-
-	@Override
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-	}
-
-	@Override
-	public void onProviderEnabled(String provider) {
-	}
-
-	@Override
-	public void onProviderDisabled(String provider) {
 	}
 
 	/**

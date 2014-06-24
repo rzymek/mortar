@@ -9,11 +9,11 @@ import java.io.Serializable;
 
 public class Config implements Serializable {
 	private static final long serialVersionUID = 1L;
-	public long locationMinInterval = 1 * 60 * 1000;
+	public long locationMinInterval = 5 * 60 * 1000;
 	public short locationMinDistance = 5;
 	public long maxGpsUptime = 3 * 60 * 1000;// 1 * 60 * 1000;
 	public long maxGpsDowntime = 5 * 60 * 1000;// 5 * 60 * 1000;
-	public long passiveLocationMinInterval = locationMinInterval;
+	public long passiveLocationMinInterval = 1 * 60 * 1000;
 
 	public void serialize(OutputStream buf) throws IOException {
 		DataOutputStream out = new DataOutputStream(buf);
