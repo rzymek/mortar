@@ -6,11 +6,11 @@ import android.preference.PreferenceManager;
 
 public enum Config {
 	//@formatter:off
-	LOCATION_MIN_INTERVAL(5), 
-	LOCATION_MIN_DISTANCE(5), 
+	LOC_MIN_INTERVAL(5), 
+	LOC_MIN_DISTANCE(5), 
 	MAX_GPS_UPTIME(3), 
 	MAX_GPS_DOWNTIME(5), 
-	PASSIVE_LOCATION_MIN_INTERVAL(1), 
+	PASSIVE_LOC_MIN_INTERVAL(1), 
 	MIN_GPS_UPTIME(1), 
 	MIN_GPS_DOWNTIME(1), 
 	SCREEN_GPS_CONTROL(true);

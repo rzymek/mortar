@@ -3,9 +3,9 @@ package org.mortar.client;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
-import static org.mortar.client.Config.LOCATION_MIN_DISTANCE;
-import static org.mortar.client.Config.LOCATION_MIN_INTERVAL;
-import static org.mortar.client.Config.PASSIVE_LOCATION_MIN_INTERVAL;
+import static org.mortar.client.Config.LOC_MIN_DISTANCE;
+import static org.mortar.client.Config.LOC_MIN_INTERVAL;
+import static org.mortar.client.Config.PASSIVE_LOC_MIN_INTERVAL;
 import static org.mortar.client.Config.SCREEN_GPS_CONTROL;
 
 import java.util.Date;
@@ -63,9 +63,9 @@ public class ListenerService extends Service {
 				app.setCurrentBestLocation(location);
 
 				if (lastSavedLocation != null) {
-					if (lastSavedLocation.distanceTo(location) < config.milis(LOCATION_MIN_DISTANCE))
+					if (lastSavedLocation.distanceTo(location) < config.milis(LOC_MIN_DISTANCE))
 						return;
-					if (location.getTime() - lastSavedLocation.getTime() < config.milis(PASSIVE_LOCATION_MIN_INTERVAL))
+					if (location.getTime() - lastSavedLocation.getTime() < config.milis(PASSIVE_LOC_MIN_INTERVAL))
 						return;
 				}
 				lastSavedLocation = location;
@@ -176,8 +176,8 @@ public class ListenerService extends Service {
 			setGpsDelayed(GPS_OFF, config.getGpsUptime());
 		}
 		
-		long minTime = config.milis(LOCATION_MIN_INTERVAL);
-		long distance = config.milis(LOCATION_MIN_DISTANCE);
+		long minTime = config.milis(LOC_MIN_INTERVAL);
+		long distance = config.milis(LOC_MIN_DISTANCE);
 		locationManager.requestLocationUpdates(GPS_PROVIDER, minTime, distance, gpsListener);
 		gpsListener.onLocationChanged(locationManager.getLastKnownLocation(PASSIVE_PROVIDER));
 	}
@@ -197,9 +197,9 @@ public class ListenerService extends Service {
 	private void registerOtherLocationProviders() {
 		try {
 			locationManager.removeUpdates(otherProvidersListener);
-			long passiveMinTime = config.milis(PASSIVE_LOCATION_MIN_INTERVAL);
-			long networkMinTime = config.milis(LOCATION_MIN_INTERVAL);
-			float minDistance = config.milis(LOCATION_MIN_DISTANCE);
+			long passiveMinTime = config.milis(PASSIVE_LOC_MIN_INTERVAL);
+			long networkMinTime = config.milis(LOC_MIN_INTERVAL);
+			float minDistance = config.milis(LOC_MIN_DISTANCE);
 			locationManager.requestLocationUpdates(PASSIVE_PROVIDER, passiveMinTime, minDistance, otherProvidersListener);
 			locationManager.requestLocationUpdates(NETWORK_PROVIDER, networkMinTime, minDistance, otherProvidersListener);
 		} catch (Exception ex) {
