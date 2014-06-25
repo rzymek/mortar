@@ -7,7 +7,7 @@
         android:id="@+id/menu_config_reset"
         android:icon="@android:drawable/ic_menu_delete"
         android:orderInCategory="103"
-        android:title="Reset"
-        app:showAsAction="ifRoom"/>
+        android:title="@string/reset" 
+        app:showAsAction="ifRoom"/> 
 
 </menu>

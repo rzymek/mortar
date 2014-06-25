@@ -3,9 +3,17 @@
 
     <string name="action_settings">Settings</string>
     <string name="app_name">0Mortar Client</string>
-    <string name="title_activity_info">0Mortar Hit</string>
     <string name="title_activity_server">0Mortar Server</string>
-    <string name="title_activity_number_list">0Mortar Targets</string>
-    <string name="title_activity_view_log">0Mortal Log</string>
+    <string name="title_activity_info">Mortar Hit</string>
+    <string name="title_activity_number_list">Targets numbers</string>
+    <string name="title_activity_view_log">Mortal Log</string>
+    <string name="reset">Reset</string>
+    <string name="save">Save</string>
+    <string name="send_config">Send config</string>
+    <string name="config">Config</string>
+    <string name="target_numbers">Target numbers</string>
+    <string name="refresh">Refresh</string>
+    <string name="export">Export</string>
+    <string name="epicenter">Epicentrum</string>
 
 </resources>

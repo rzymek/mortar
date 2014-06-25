@@ -7,7 +7,7 @@
         android:id="@+id/number_list_save"
         android:orderInCategory="100" 
         android:icon="@android:drawable/ic_menu_save"
-        android:title="Save"
+        android:title="@string/save" 
         app:showAsAction="always"/>
 
 </menu>

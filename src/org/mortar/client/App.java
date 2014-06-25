@@ -2,7 +2,6 @@ package org.mortar.client;
 
 import org.mortar.client.activities.InfoActivity;
 import org.mortar.common.msg.Explosion;
-
 import android.app.Application;
 import android.content.Intent;
 import android.location.Location;
@@ -26,7 +25,7 @@ public class App extends Application {
 		Log.i("APP", "distance: "+distance);
 		if (distance < explosion.killZoneDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
-			String text = "KIA\nEpicentrum: " + (int) distance + "m"
+			String text = "KIA\n"+getString(R.string.epicenter)+": " + (int) distance + "m"
 					+ "\nStrefa KIA:"+explosion.killZoneDiameter+"m"
 					+ "\nSłychać na:"+explosion.warrningDiameter;
 			result.putExtra(InfoActivity.Key.MESSAGE.name(), text);
