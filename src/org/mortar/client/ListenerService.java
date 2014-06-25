@@ -121,7 +121,6 @@ public class ListenerService extends Service {
 		db.log("onStartCommand");
 		if (intent.getBooleanExtra(EXTRA_RELOAD, false)) {
 			reload();
-			return START_NOT_STICKY;
 		}
 
 		int forceActive = intent.getIntExtra(EXTRA_HIGH_ALERT, -1);
@@ -130,7 +129,6 @@ public class ListenerService extends Service {
 			clearHandlerMessages();
 			startGPS();
 			handler.sendMessageDelayed(handler.obtainMessage(LOW_ALERT), forceActive * 60 * 1000);
-			return START_NOT_STICKY;
 		}
 
 		if (config == null) {
