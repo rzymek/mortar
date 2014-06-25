@@ -3,14 +3,14 @@ package org.mortar.client;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
-import static org.mortar.client.Pref.LOCATION_MIN_DISTANCE;
-import static org.mortar.client.Pref.LOCATION_MIN_INTERVAL;
-import static org.mortar.client.Pref.PASSIVE_LOCATION_MIN_INTERVAL;
-import static org.mortar.client.Pref.SCREEN_GPS_CONTROL;
+import static org.mortar.client.Config.LOCATION_MIN_DISTANCE;
+import static org.mortar.client.Config.LOCATION_MIN_INTERVAL;
+import static org.mortar.client.Config.PASSIVE_LOCATION_MIN_INTERVAL;
+import static org.mortar.client.Config.SCREEN_GPS_CONTROL;
 
 import java.util.Date;
 
-import org.mortar.client.Pref.Read;
+import org.mortar.client.Config.Read;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.data.DBHelper;
 import org.mortar.common.CoordinateConversion;
@@ -100,7 +100,7 @@ public class ListenerService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
-		config = new Pref.Read(this);
+		config = new Config.Read(this);
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 

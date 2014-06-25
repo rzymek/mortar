@@ -1,7 +1,7 @@
 package org.mortar.server;
 
-import org.mortar.client.Pref;
-import org.mortar.client.Pref.Read;
+import org.mortar.client.Config;
+import org.mortar.client.Config.Read;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -22,8 +22,8 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(this);
-		config = new Pref.Read(this);
-		for (final Pref key : Pref.values()) {
+		config = new Config.Read(this);
+		for (final Config key : Config.values()) {
 			Preference item;
 			if (key.type.equals(Boolean.class)) {
 				item = new CheckBoxPreference(this) {
@@ -68,7 +68,7 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		Pref cfg = Pref.valueOf(key);
+		Config cfg = Config.valueOf(key);
 		Preference pref = findPreference(key);
 		if (cfg.type.equals(Integer.class))
 			pref.setSummary("" + config.get(cfg));

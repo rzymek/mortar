@@ -1,15 +1,10 @@
 package org.mortar.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-public enum Pref {
+public enum Config {
 	//@formatter:off
 	LOCATION_MIN_INTERVAL(5), 
 	LOCATION_MIN_DISTANCE(5), 
@@ -24,11 +19,11 @@ public enum Pref {
 	public final Class<?> type;
 	public final Object defValue;
 
-	private Pref(int defValue) {
+	private Config(int defValue) {
 		this.type = Integer.class;
 		this.defValue = defValue;
 	}
-	private Pref(boolean defValue) {
+	private Config(boolean defValue) {
 		this.type = Boolean.class;
 		this.defValue = defValue;
 	}
@@ -40,41 +35,25 @@ public enum Pref {
 			shared = PreferenceManager.getDefaultSharedPreferences(ctx);
 		}
 
-		public int get(Pref key) {
+		public int get(Config key) {
 			return shared.getInt(key.name(), (int) key.defValue);
 		}
 		
-		public long milis(Pref key) {
+		public long milis(Config key) {
 			return get(key) * 60L * 1000L;
 		}
 
-		public boolean is(Pref key) {
+		public boolean is(Config key) {
 			return shared.getBoolean(key.name(), (boolean) key.defValue);
 		}
 
-		public byte[] serialize() throws IOException {
-			ByteArrayOutputStream buf = new ByteArrayOutputStream();
-			DataOutputStream out = new DataOutputStream(buf);
-			for (Pref key : values()) {
-				if (key.type.equals(Integer.class)) {
-					out.writeInt(get(key));
-				} else if (key.type.equals(Boolean.class)) {
-					out.writeBoolean(is(key));
-				} else {
-					throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
-				}
-			}
-			return buf.toByteArray();
-		}
-
 		public long getGpsUptime() {
-			return milis(Pref.MAX_GPS_UPTIME);
+			return milis(Config.MAX_GPS_UPTIME);
 		}
 
 		public long getGpsDowntime() {
-			return milis(Pref.MAX_GPS_DOWNTIME);
+			return milis(Config.MAX_GPS_DOWNTIME);
 		}
-
 	}
 
 }

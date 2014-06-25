@@ -220,7 +220,7 @@ public class ServerActivity extends Activity {
 			startActivity(new Intent(this, ConfigActivity.class));
 			return true;
 		} else if (id == R.id.menu_server_send) {
-			broadcast(new ConfigMessage());
+			broadcast(new ConfigMessage(this));
 		} else if (id == R.id.menu_server_numbers) {
 			startActivity(new Intent(this, NumberListActivity.class));
 			return true;
