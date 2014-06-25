@@ -4,11 +4,25 @@
     android:versionCode="2"
     android:versionName="1.0" >
 
+    <meta-data
+        android:name="com.google.android.gms.version"
+        android:value="@integer/google_play_services_version" />
+
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <permission
+        android:name="org.mortar.client.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="org.mortar.client.permission.C2D_MESSAGE" />
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -55,6 +69,17 @@
                 <data android:scheme="sms" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".GcmBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="org.mortar.client" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".GcmIntentService" />
 
         <activity
             android:name="org.mortar.server.NumberListActivity"
