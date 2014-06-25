@@ -10,12 +10,14 @@ import java.util.Map;
 
 import org.mortar.client.App;
 import org.mortar.client.R;
-import org.mortar.client.data.MergedMessage;
+import org.mortar.client.data.GsmMessage;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
 import org.mortar.common.MortarMessage;
-import org.mortar.common.MortarMessage.Type;
 import org.mortar.common.Utils;
+import org.mortar.common.msg.ConfigMessage;
+import org.mortar.common.msg.Explosion;
+import org.mortar.common.msg.Prepare;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -68,7 +70,7 @@ public class ServerActivity extends Activity {
 		findViewById(R.id.prepareButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				broadcast(new MortarMessage(Type.PREPARE));
+				broadcast(new Prepare(10*60));
 			}
 		});
 		clients = loadClientNumbers();
@@ -87,8 +89,8 @@ public class ServerActivity extends Activity {
 	protected void testHit() {
 		try {
 			App app = (App) getApplication();
-			MortarMessage msg = createFireMessage();
-			app.explosionEvent(msg, "");
+			Explosion msg = createFireMessage();
+			app.explosionEvent(msg);
 		} catch (Exception ex) {
 			Utils.handle(ex, this);
 		}
@@ -172,7 +174,7 @@ public class ServerActivity extends Activity {
 			if (clients.isEmpty()) {
 				Intent intent = new Intent("android.intent.action.DATA_SMS_RECEIVED");
 				intent.setData(Uri.parse("sms://0:" + R.integer.sms_port));
-				MergedMessage msg = new MergedMessage();
+				GsmMessage msg = new GsmMessage();
 				msg.contents = message.serialize();
 				msg.from = "me";
 				msg.timestamp = new Date().getTime();
@@ -196,11 +198,11 @@ public class ServerActivity extends Activity {
 		}
 	}
 
-	private MortarMessage createFireMessage() {
-		final MortarMessage message = new MortarMessage(Type.EXPLOSION);
+	private Explosion createFireMessage() {
+		final Explosion message = new Explosion();
 		message.location = getAttackLocation();
-		message.killZoneDiameter = Integer.parseInt(killZoneDiameterText.getText().toString());
-		message.warrningDiameter = Integer.parseInt(warrningDiameterText.getText().toString());
+		message.killZoneDiameter = Short.parseShort(killZoneDiameterText.getText().toString());
+		message.warrningDiameter = Short.parseShort(warrningDiameterText.getText().toString());
 		return message;
 	}
 
@@ -218,8 +220,7 @@ public class ServerActivity extends Activity {
 			startActivity(new Intent(this, ConfigActivity.class));
 			return true;
 		} else if (id == R.id.menu_server_send) {
-			MortarMessage msg = new MortarMessage(Type.CONFIG);
-			broadcast(msg);
+			broadcast(new ConfigMessage());
 		} else if (id == R.id.menu_server_numbers) {
 			startActivity(new Intent(this, NumberListActivity.class));
 			return true;

@@ -1,26 +1,29 @@
 package org.mortar.client;
 
 import org.mortar.client.activities.InfoActivity;
-import org.mortar.common.MortarMessage;
+import org.mortar.common.msg.Explosion;
 
 import android.app.Application;
 import android.content.Intent;
 import android.location.Location;
+import android.util.Log;
 
 public class App extends Application {
 
 	private static final long TIMEOUT = 7 * 60 * 1000;
 	private Location currentBestLocation;
-	private MortarMessage explosion;
+	private Explosion explosion;
 
 	private void checkDistance() {
+		Log.i("APP","checkDistance");
 		if (currentBestLocation == null || explosion == null) {
 			return;
 		}
-		if (isCurrentLocationValid()) {
+		if (!isCurrentLocationValid()) {
 			return;
 		}
 		float distance = currentBestLocation.distanceTo(explosion.location);
+		Log.i("APP", "distance: "+distance);
 		if (distance < explosion.killZoneDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
 			String text = "KIA\nEpicentrum: " + (int) distance + "m"
@@ -47,7 +50,10 @@ public class App extends Application {
 			return false;
 		if(explosion == null || explosion.location == null)
 			return true;
-		return Math.abs(currentBestLocation.getTime() - explosion.location.getTime()) > TIMEOUT;
+		long timeSpan = Math.abs(currentBestLocation.getTime() - explosion.location.getTime());
+		boolean isValid = timeSpan > TIMEOUT;
+		Log.i("APP", "timeSpan: "+timeSpan/1000.0+"sec - "+(isValid ? "valid" : "obsolete"));
+		return isValid;
 	}
 
 	private void show(Intent result) {
@@ -65,9 +71,11 @@ public class App extends Application {
 		checkDistance();
 	}
 
-	public void explosionEvent(MortarMessage info, String from) {
-		explosion = info;
-		startService(new Intent(this, ListenerService.class));
+	public void explosionEvent(Explosion explosion) {
+		this.explosion = explosion;
+		Intent intent = new Intent(this, ListenerService.class);
+		intent.putExtra(ListenerService.EXTRA_HIGH_ALERT, 3);
+		startService(intent);
 		checkDistance();
 	}
 

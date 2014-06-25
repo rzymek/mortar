@@ -5,55 +5,57 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-import android.location.Location;
-import android.location.LocationManager;
+import org.mortar.common.msg.ConfigMessage;
+import org.mortar.common.msg.Explosion;
+import org.mortar.common.msg.Prepare;
 
-public class MortarMessage {
+import android.content.Context;
 
-	public static enum Type {
-		PREPARE, EXPLOSION, CONFIG, RELOAD
+public abstract class MortarMessage {
+	private static final Map<Integer, Class<? extends MortarMessage>> registry = new HashMap<>();
+	static {
+		register(Explosion.class);
+		register(Prepare.class);
+		register(ConfigMessage.class);
 	}
 
-	public final Type type;
-	public Location location;
-	public int killZoneDiameter;
-	public int warrningDiameter;
+	public abstract void onReceive(Context context);
 
-	public MortarMessage(Type type) {
-		super();
-		this.type = type;
-	}
+	protected abstract void serialize(DataOutputStream out) throws IOException;
+
+	protected abstract void deserialize(DataInputStream in) throws IOException;
 
 	public byte[] serialize() throws IOException {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(buf);
 
-		out.writeByte(type.ordinal());
-		if (type == Type.EXPLOSION) {
-			out.writeDouble(location.getLatitude());
-			out.writeDouble(location.getLongitude());
-			out.writeLong(location.getTime());
-			out.writeShort(killZoneDiameter);
-			out.writeShort(warrningDiameter);
-		}
+		int type = getTypeCode(getClass());
+		out.writeInt(type);
+		serialize(out);
 		return buf.toByteArray();
 	}
 
-	public static MortarMessage deserialize(byte[] data) throws IOException {
+	public static MortarMessage deserialize(byte[] data) throws IOException, ReflectiveOperationException {
 		ByteArrayInputStream buf = new ByteArrayInputStream(data);
 		DataInputStream in = new DataInputStream(buf);
-
-		Type type = Type.values()[in.readByte()];
-		MortarMessage message = new MortarMessage(type);
-		if (type == Type.EXPLOSION) {
-			message.location = new Location(LocationManager.GPS_PROVIDER);
-			message.location.setLatitude(in.readDouble());
-			message.location.setLongitude(in.readDouble());
-			message.location.setTime(in.readLong());
-			message.killZoneDiameter = in.readShort();
-			message.warrningDiameter = in.readShort();
+		int type = in.readInt();
+		Class<? extends MortarMessage> clazz = registry.get(type);
+		if (clazz == null) {
+			throw new IllegalArgumentException("Unregistered type: " + type + ". Known types: " + registry);
 		}
+		MortarMessage message = clazz.newInstance();
+		message.deserialize(in);
 		return message;
+	}
+
+	public static void register(Class<? extends MortarMessage> clazz) {
+		registry.put(getTypeCode(clazz), clazz);
+	}
+
+	protected static int getTypeCode(Class<? extends MortarMessage> clazz) {
+		return clazz.getName().hashCode();
 	}
 }

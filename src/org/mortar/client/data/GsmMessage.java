@@ -7,22 +7,24 @@ import java.io.Serializable;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
-public class MergedMessage implements Serializable { 
+public class GsmMessage implements Serializable { 
+	private static final long serialVersionUID = 1L;
+	
 	public byte[] contents;
 	public String from="";
 	public long timestamp=0;
 	
-	public static MergedMessage createFromBundle(Bundle bundle) throws IOException {
+	public static GsmMessage createFromBundle(Bundle bundle) throws IOException {
 		Object[] pdus = (Object[]) bundle.get("pdus");
 		if(pdus == null)
 			return null;
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		MergedMessage msg = null;
+		GsmMessage msg = null;
 		for (Object pdu : pdus) {
 			SmsMessage sms = SmsMessage.createFromPdu((byte[]) pdu);
 			buf.write(sms.getUserData());
 			if(msg == null) {
-				msg = new MergedMessage();
+				msg = new GsmMessage();
 				msg.from = sms.getOriginatingAddress();
 				msg.timestamp = sms.getTimestampMillis();
 			}

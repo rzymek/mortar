@@ -1,9 +1,19 @@
 package org.mortar.client;
 
+import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.NETWORK_PROVIDER;
+import static android.location.LocationManager.PASSIVE_PROVIDER;
+import static org.mortar.client.Pref.LOCATION_MIN_DISTANCE;
+import static org.mortar.client.Pref.LOCATION_MIN_INTERVAL;
+import static org.mortar.client.Pref.PASSIVE_LOCATION_MIN_INTERVAL;
+import static org.mortar.client.Pref.SCREEN_GPS_CONTROL;
+
+import java.util.Date;
+
 import org.mortar.client.Pref.Read;
-import static org.mortar.client.Pref.*;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.data.DBHelper;
+import org.mortar.common.CoordinateConversion;
 import org.mortar.common.Utils;
 
 import android.app.Notification;
@@ -16,11 +26,11 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import static android.location.LocationManager.*;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 public class ListenerService extends Service {
 	protected static final int GPS_ON = 61;
@@ -45,6 +55,8 @@ public class ListenerService extends Service {
 	private LocationListener gpsListener = new AbstractLocationListener() {
 		@Override
 		public void onLocationChanged(Location location) {
+			Log.i("LOC", location.getProvider()+":"+CoordinateConversion.INST.latLon2UTM(location.getLatitude(), location.getLongitude())+" "
+					+ (new Date().getTime() - location.getTime())/1000);
 			db.log("location:" + location.getProvider());
 			App app = (App) getApplication();
 			if (GPSUtils.isBetterLocation(location, app.getCurrentBestLocation())) {
@@ -128,7 +140,7 @@ public class ListenerService extends Service {
 			highAlert = true;
 			clearHandlerMessages();
 			startGPS();
-			handler.sendMessageDelayed(handler.obtainMessage(LOW_ALERT), forceActive * 60 * 1000);
+			handler.sendMessageDelayed(handler.obtainMessage(LOW_ALERT), forceActive * 1000);
 		}
 
 		if (config == null) {
@@ -163,10 +175,11 @@ public class ListenerService extends Service {
 		if (!highAlert) {
 			setGpsDelayed(GPS_OFF, config.getGpsUptime());
 		}
-
+		
 		long minTime = config.milis(LOCATION_MIN_INTERVAL);
 		long distance = config.milis(LOCATION_MIN_DISTANCE);
 		locationManager.requestLocationUpdates(GPS_PROVIDER, minTime, distance, gpsListener);
+		gpsListener.onLocationChanged(locationManager.getLastKnownLocation(PASSIVE_PROVIDER));
 	}
 
 	private void stopGPS() {
