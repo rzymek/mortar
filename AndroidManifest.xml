@@ -57,7 +57,7 @@
         </receiver>
 
         <activity
-            android:name="org.mortar.server.NumberListActivity"
+            android:name="org.mortar.server.NumbersActivity"
             android:label="@string/title_activity_number_list" >
         </activity>
         <activity

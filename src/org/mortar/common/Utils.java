@@ -3,7 +3,6 @@ package org.mortar.common;
 import java.io.UnsupportedEncodingException;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 

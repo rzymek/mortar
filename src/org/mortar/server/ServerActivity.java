@@ -98,7 +98,7 @@ public class ServerActivity extends Activity {
 
 	private List<String> loadClientNumbers() {
 		SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-		String[] raw = shared.getString(NumberListActivity.DataKey.NUMBERS.name(), "").split("\n");
+		String[] raw = shared.getString(NumbersActivity.EXTRA_NUMBERS, "").split("\n");
 		List<String> values = new ArrayList<>(Arrays.asList(raw));
 		Iterator<String> iterator = values.iterator();
 		while (iterator.hasNext()) {
@@ -222,7 +222,7 @@ public class ServerActivity extends Activity {
 		} else if (id == R.id.menu_server_send) {
 			broadcast(new ConfigMessage(this));
 		} else if (id == R.id.menu_server_numbers) {
-			startActivity(new Intent(this, NumberListActivity.class));
+			startActivity(new Intent(this, NumbersActivity.class));
 			return true;
 		}
 		return super.onOptionsItemSelected(item);

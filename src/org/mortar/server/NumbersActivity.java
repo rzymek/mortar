@@ -12,10 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-public class NumberListActivity extends ActionBarActivity {
-	public static enum DataKey {
-		NUMBERS
-	}
+public class NumbersActivity extends ActionBarActivity {
+	public static final String EXTRA_NUMBERS = "numbers";
 	private TextView numbersText;
 
 	@Override
@@ -23,14 +21,14 @@ public class NumberListActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_number_list);
 		SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-		numbersText  = (TextView) findViewById(R.id.numbersText);
-		numbersText.setText(shared.getString(DataKey.NUMBERS.name(),""));
+		numbersText = (TextView) findViewById(R.id.numbersText);
+		numbersText.setText(shared.getString(EXTRA_NUMBERS, ""));
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.number_list, menu);
+		getMenuInflater().inflate(R.menu.numbers, menu);
 		return true;
 	}
 
@@ -40,7 +38,7 @@ public class NumberListActivity extends ActionBarActivity {
 		if (id == R.id.number_list_save) {
 			SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
 			Editor edit = shared.edit();
-			edit.putString(DataKey.NUMBERS.name(), numbersText.getText().toString());
+			edit.putString(EXTRA_NUMBERS, numbersText.getText().toString());
 			edit.commit();
 			Utils.toast("Saved", this);
 			return true;
