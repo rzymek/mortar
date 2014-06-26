@@ -1,9 +1,9 @@
 package org.mortar.server;
 
-import org.mortar.client.Config;
-import org.mortar.client.Config.Read;
 import org.mortar.client.R;
+import org.mortar.common.Config;
 import org.mortar.common.Utils;
+import org.mortar.common.Config.Read;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;

@@ -3,15 +3,16 @@ package org.mortar.client;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
-import static org.mortar.client.Config.SCREEN_GPS_CONTROL;
+import static org.mortar.common.Config.SCREEN_GPS_CONTROL;
 
 import java.util.Date;
 
-import org.mortar.client.Config.Read;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.data.LocationLogger;
 import org.mortar.common.CoordinateConversion;
+import org.mortar.common.Config.Read;
 import org.mortar.common.CoordinateConversion.UTM;
+import org.mortar.common.Config;
 import org.mortar.common.SateliteListener;
 import org.mortar.common.Utils;
 
