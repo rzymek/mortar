@@ -6,7 +6,7 @@
     <string name="title_activity_server">0Mortar Server</string>
     <string name="title_activity_info">Mortar Hit</string>
     <string name="title_activity_number_list">Targets numbers</string>
-    <string name="title_activity_view_log">Mortal Log</string>
+    <string name="title_activity_view_log">0Mortal Log</string>
     <string name="reset">Reset</string>
     <string name="save">Save</string>
     <string name="send_config">Send config</string>
