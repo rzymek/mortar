@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.mortar.client.ListenerService;
+import org.mortar.client.GPSListenerService;
 import org.mortar.common.MortarMessage;
 
 import android.content.Context;
@@ -23,8 +23,8 @@ public class Prepare extends MortarMessage {
 
 	@Override
 	public void onReceive(Context context) {
-		Intent prepare = new Intent(context, ListenerService.class);
-		prepare.putExtra(ListenerService.EXTRA_HIGH_ALERT, seconds);
+		Intent prepare = new Intent(context, GPSListenerService.class);
+		prepare.putExtra(GPSListenerService.EXTRA_HIGH_ALERT, seconds);
 		context.startService(prepare);
 	}
 

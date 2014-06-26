@@ -1,6 +1,6 @@
 package org.mortar.client.activities;
 
-import org.mortar.client.ListenerService;
+import org.mortar.client.GPSListenerService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -28,7 +28,7 @@ public class LuncherActivity extends Activity {
 				@Override
 				public void onClick(DialogInterface arg0, int arg1) {
 					Toast.makeText(getApplicationContext(), "MortarClient: exit", Toast.LENGTH_SHORT).show();
-					stopService(new Intent(thiz, ListenerService.class));
+					stopService(new Intent(thiz, GPSListenerService.class));
 					finish();
 				}
 			});
@@ -41,7 +41,7 @@ public class LuncherActivity extends Activity {
 			builder.create().show();
 		} else {
 			Toast.makeText(getApplicationContext(), "MortarClient: started", Toast.LENGTH_SHORT).show();
-			startService(new Intent(this, ListenerService.class));
+			startService(new Intent(this, GPSListenerService.class));
 			finish();
 		}
 	}

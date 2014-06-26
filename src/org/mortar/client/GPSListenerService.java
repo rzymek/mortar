@@ -33,7 +33,8 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
-public class ListenerService extends Service {
+public class GPSListenerService extends Service {
+	
 	protected static final int GPS_ON = 61;
 	protected static final int GPS_OFF = 60;
 	protected static final int LOW_ALERT = 66;

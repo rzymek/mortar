@@ -31,7 +31,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="org.mortar.client.ListenerService" />
+        <service android:name="org.mortar.client.GPSListenerService" />
 
         <activity
             android:name="org.mortar.client.activities.InfoActivity"

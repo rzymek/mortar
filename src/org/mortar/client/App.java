@@ -72,8 +72,8 @@ public class App extends Application {
 
 	public void explosionEvent(Explosion explosion) {
 		this.explosion = explosion;
-		Intent intent = new Intent(this, ListenerService.class);
-		intent.putExtra(ListenerService.EXTRA_HIGH_ALERT, 3);
+		Intent intent = new Intent(this, GPSListenerService.class);
+		intent.putExtra(GPSListenerService.EXTRA_HIGH_ALERT, 3);
 		startService(intent);
 		checkDistance();
 	}
