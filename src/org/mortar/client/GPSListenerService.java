@@ -197,7 +197,7 @@ public class GPSListenerService extends Service {
 	private void request(State requested) {
 		if (currentState == State.HIGH_ALERT) {
 			if (requested != State.HIGH_ALERT) {
-				logger.log("rejected: " + currentState + " -> " + requested);
+				logger.log(currentState + " -/-> " + requested);
 				return;
 			}
 		}
@@ -205,7 +205,7 @@ public class GPSListenerService extends Service {
 	}
 
 	private void transitionTo(State requested) {
-		logger.log("transition: " + currentState + " -> " + requested);
+		logger.log(currentState + " => " + requested);
 		switch (requested) {
 		case HIGH_ALERT:
 			gps.removeUpdates(gpsListener);
