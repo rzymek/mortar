@@ -46,6 +46,7 @@ import android.widget.TextView;
 public class ServerActivity extends Activity {
 	private static final int RC_SENT = 100;
 	private static final int RC_DELIVERY_REPORT = 101;
+	protected static final int PREPARE_SECONDS = 10;//TODO: increase
 
 	private List<String> clients;
 	public Map<String, String> clientStatus = new HashMap<>();
@@ -83,7 +84,7 @@ public class ServerActivity extends Activity {
 		findViewById(R.id.prepareButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				broadcast(new Prepare(10 * 60));
+				broadcast(new Prepare(PREPARE_SECONDS));
 			}
 		});
 		clients = loadClientNumbers();

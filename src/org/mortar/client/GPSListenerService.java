@@ -3,20 +3,20 @@ package org.mortar.client;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
-import static org.mortar.client.Config.LOC_MIN_DISTANCE;
-import static org.mortar.client.Config.LOC_MIN_INTERVAL;
-import static org.mortar.client.Config.PASSIVE_LOC_MIN_INTERVAL;
 import static org.mortar.client.Config.SCREEN_GPS_CONTROL;
 
 import java.util.Date;
 
 import org.mortar.client.Config.Read;
 import org.mortar.client.activities.LuncherActivity;
-import org.mortar.client.data.DBHelper;
+import org.mortar.client.data.LocationLogger;
 import org.mortar.common.CoordinateConversion;
+import org.mortar.common.CoordinateConversion.UTM;
+import org.mortar.common.SateliteListener;
 import org.mortar.common.Utils;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -37,45 +37,52 @@ public class GPSListenerService extends Service {
 	private static enum State {
 		HIGH_ALERT, LOW_ALERT, OFF
 	}
-	private State state = State.OFF;
-	
-	protected static final int GPS_ON = 61;
-	protected static final int GPS_OFF = 60;
-	protected static final int LOW_ALERT = 66;
+
+	private boolean isScreenOn = false;
+	private State currentState = State.LOW_ALERT;
 
 	private static final int NOTIFIFACTION_ID = 1337;
+	private static final int STOP_HIGH_ALERT = 100;
 
-	public static final String EXTRA_CONFIG = "config";
-	public static final String EXTRA_HIGH_ALERT = "high alert (min)";
-	public static final String EXTRA_RELOAD = "reload";
+	public static final String EXTRA_HIGH_ALERT = "high alert (sec)";
 
-	private LocationManager locationManager;
-	private DBHelper db;
+	private static final long LOW_ALERT_INTERVAL = 5 * 60 * 1000L;
+	private static final float LOW_ALERT_DISTANCE = 50;
+
+	private static final long HIGH_ALERT_INTERVAL = 1 * 1000L;
+	private static final float HIGH_ALERT_DISTANCE = 0;
+
+	protected static final long PASSIVE_INTERVAL = 1 * 60 * 1000L;
+	private static final float PASSIVE_DISTANCE = 15;
+
+	private static final long NETWORK_INTERVAL = 5 * 60 * 1000L;;
+	private static final float NETWORK_DISTANCE = 100;
+
+	private static final boolean VERBOSE = true;
+
+	private LocationManager gps;
+
+	private SateliteListener sateliteListener;
+
 	private Handler handler;
-	private Location lastSavedLocation;
 	private Read config;
-	private boolean highAlert = false;
+	private LocationLogger logger;
 
 	// ========================================================================================================
 
 	private LocationListener gpsListener = new AbstractLocationListener() {
 		@Override
 		public void onLocationChanged(Location location) {
-			Log.i("LOC", location.getProvider()+":"+CoordinateConversion.INST.latLon2UTM(location.getLatitude(), location.getLongitude())+" "
-					+ (new Date().getTime() - location.getTime())/1000);
-			db.log("location:" + location.getProvider());
+			if (Log.isLoggable("LOC", Log.DEBUG)) {
+				UTM utm = CoordinateConversion.INST.latLon2UTM(location.getLatitude(), location.getLongitude());
+				long since = (new Date().getTime() - location.getTime()) / 1000;
+				Log.d("LOC", location.getProvider() + ":" + utm + " " + since);
+			}
+
 			App app = (App) getApplication();
 			if (GPSUtils.isBetterLocation(location, app.getCurrentBestLocation())) {
 				app.setCurrentBestLocation(location);
-
-				if (lastSavedLocation != null) {
-					if (lastSavedLocation.distanceTo(location) < config.milis(LOC_MIN_DISTANCE))
-						return;
-					if (location.getTime() - lastSavedLocation.getTime() < config.milis(PASSIVE_LOC_MIN_INTERVAL))
-						return;
-				}
-				lastSavedLocation = location;
-				db.put(location);
+				logger.put(location);
 			}
 		}
 	};
@@ -91,82 +98,81 @@ public class GPSListenerService extends Service {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			db.log(action);
 			if (action.equals(Intent.ACTION_SCREEN_OFF)) {
-				stopGPS();
+				isScreenOn = false;
+				request(State.OFF);
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
-				startGPS();
+				isScreenOn = true;
+				request(State.LOW_ALERT);
 			}
 		}
 	};
+	private CharSequence notificationTitle = "Mortar";
+	private CharSequence notificationText = "";
 
 	// ========================================================================================================
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
 		config = new Config.Read(this);
-
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-		db = new DBHelper(this);
+		logger = new LocationLogger(this);
+		gps = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		gps.addGpsStatusListener(sateliteListener);
 
 		handler = new Handler(getMainLooper()) {
 			@Override
 			public void handleMessage(Message msg) {
-				clearHandlerMessages();
-				switch (msg.what) {
-				case LOW_ALERT:
-					highAlert = false;
-					// continue to GPS_OFF:
-				case GPS_OFF:
-					stopGPS();
-					setGpsDelayed(GPS_ON, config.getGpsDowntime());
-					return;
-				case GPS_ON:
-					startGPS();
-					return;
+				if (msg.what == STOP_HIGH_ALERT) {
+					if (isScreenOn) {
+						transitionTo(State.LOW_ALERT);
+					} else {
+						transitionTo(State.OFF);
+					}
 				}
 			}
 		};
-
-		db.log("created");
+		sateliteListener = new SateliteListener(gps) {
+			@Override
+			protected void onSatelitesChanged(int used, int max) {
+				String title = currentState.name();
+				String msg = " " + used + "/" + max;
+				updateNotification(title, msg);
+			}
+		};
+		reload();
+		logger.log("listener created");
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		db.log("onStartCommand");
-		if (intent.getBooleanExtra(EXTRA_RELOAD, false)) {
-			reload();
-		}
-
+		logger.log("start command");
 		int forceActive = intent.getIntExtra(EXTRA_HIGH_ALERT, -1);
 		if (forceActive > 0) {
-			highAlert = true;
-			clearHandlerMessages();
-			startGPS();
-			handler.sendMessageDelayed(handler.obtainMessage(LOW_ALERT), forceActive * 1000);
+			request(State.HIGH_ALERT);
+			handler.removeMessages(STOP_HIGH_ALERT);
+			handler.sendMessageDelayed(handler.obtainMessage(STOP_HIGH_ALERT), forceActive * 1000L);
 		}
-
-		if (config == null) {
-			// defaults:
-			// setConfig(new Config());
-		}
-
-		startNotification();
+		startForeground(NOTIFIFACTION_ID, createNotification(null, null));
 		return START_NOT_STICKY;
 	}
 
-	private void startNotification() {
+	private Notification createNotification(CharSequence title, CharSequence msg) {
+		if (title != null) {
+			notificationTitle = title;
+		}
+		if (msg != null) {
+			notificationText = msg;
+		}
 		Intent resultIntent = new Intent(this, LuncherActivity.class);
 		resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
 		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-		// The stack builder object will contain an artificial back stack for the
-		// started Activity.
-		// This ensures that navigating backward from the Activity leads out of
-		// your application to the Home screen.
+		/*
+		 * The stack builder object will contain an artificial back stack for
+		 * the started Activity. This ensures that navigating backward from the
+		 * Activity leads out of your application to the Home screen.
+		 */
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 		// Adds the back stack for the Intent (but not the Intent itself)
 		stackBuilder.addParentStack(LuncherActivity.class);
@@ -177,47 +183,57 @@ public class GPSListenerService extends Service {
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 		builder.setContentIntent(resultPendingIntent);
 		builder.setSmallIcon(R.drawable.ic_launcher);
-		builder.setContentTitle("Mortar Client");
+		builder.setContentTitle(this.notificationTitle);
+		if (VERBOSE) {
+			builder.setContentText(this.notificationText);
+		}
 
 		Notification notification = builder.build();
 		notification.flags |= Notification.FLAG_NO_CLEAR;
-		startForeground(NOTIFIFACTION_ID, notification);
+		return notification;
 	}
 
 	// ========================================================================================================
-
-	private void startGPS() {
-		db.log("start GPS " + (highAlert ? "!!!" : ""));
-		if (!highAlert) {
-			setGpsDelayed(GPS_OFF, config.getGpsUptime());
+	private void request(State requested) {
+		if (currentState == State.HIGH_ALERT) {
+			if (requested != State.HIGH_ALERT) {
+				logger.log("rejected: " + currentState + " -> " + requested);
+				return;
+			}
 		}
-		
-		long minTime = config.milis(LOC_MIN_INTERVAL);
-		long distance = config.milis(LOC_MIN_DISTANCE);
-		locationManager.requestLocationUpdates(GPS_PROVIDER, minTime, distance, gpsListener);
-		gpsListener.onLocationChanged(locationManager.getLastKnownLocation(PASSIVE_PROVIDER));
+		transitionTo(requested);
 	}
 
-	private void stopGPS() {
-		if (highAlert) {
-			db.log("ignoring stop GPS (high alert)");
-			return;
+	private void transitionTo(State requested) {
+		logger.log("transition: " + currentState + " -> " + requested);
+		switch (requested) {
+		case HIGH_ALERT:
+			gps.removeUpdates(gpsListener);
+			gps.requestLocationUpdates(GPS_PROVIDER, HIGH_ALERT_INTERVAL, HIGH_ALERT_DISTANCE, gpsListener);
+			break;
+		case LOW_ALERT:
+			gps.removeUpdates(gpsListener);
+			gps.requestLocationUpdates(GPS_PROVIDER, LOW_ALERT_INTERVAL, LOW_ALERT_DISTANCE, gpsListener);
+			break;
+		case OFF:
+			gps.removeUpdates(gpsListener);
+			break;
 		}
-		db.log("stop GPS");
-		clearHandlerMessages();
-		locationManager.removeUpdates(gpsListener);
+		this.currentState = requested;
+		updateNotification(currentState.name(), null);
 	}
 
 	// ========================================================================================================
 
 	private void registerOtherLocationProviders() {
 		try {
-			locationManager.removeUpdates(otherProvidersListener);
-			long passiveMinTime = config.milis(PASSIVE_LOC_MIN_INTERVAL);
-			long networkMinTime = config.milis(LOC_MIN_INTERVAL);
-			float minDistance = config.milis(LOC_MIN_DISTANCE);
-			locationManager.requestLocationUpdates(PASSIVE_PROVIDER, passiveMinTime, minDistance, otherProvidersListener);
-			locationManager.requestLocationUpdates(NETWORK_PROVIDER, networkMinTime, minDistance, otherProvidersListener);
+			gps.removeUpdates(otherProvidersListener);
+		} catch (Exception ex) {
+			// ignore
+		}
+		try {
+			gps.requestLocationUpdates(PASSIVE_PROVIDER, PASSIVE_INTERVAL, PASSIVE_DISTANCE, otherProvidersListener);
+			gps.requestLocationUpdates(NETWORK_PROVIDER, NETWORK_INTERVAL, NETWORK_DISTANCE, otherProvidersListener);
 		} catch (Exception ex) {
 			// emulator does not support NETWORK_PROVIDER.
 			Utils.handle(ex, getApplicationContext());
@@ -240,37 +256,26 @@ public class GPSListenerService extends Service {
 	}
 
 	public void reload() {
-		highAlert = false;
-		stopGPS();
-
+		request(currentState);
 		registerScreenListener();
 		registerOtherLocationProviders();
-
-		startGPS();
-	}
-
-	public void setGpsDelayed(int what, long when) {
-		handler.removeMessages(GPS_ON);
-		handler.removeMessages(GPS_OFF);
-		handler.sendMessageDelayed(handler.obtainMessage(what), when);
-
-	}
-
-	private void clearHandlerMessages() {
-		handler.removeMessages(GPS_OFF);
-		handler.removeMessages(GPS_ON);
-		handler.removeMessages(LOW_ALERT);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		db.log("listener destroy");
-		db.close();
+		logger.log("listener destroyed");
+		logger.close();
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return (null);
+	}
+
+	private void updateNotification(String title, String msg) {
+		NotificationManager notifications = (NotificationManager) GPSListenerService.this.getSystemService(NOTIFICATION_SERVICE);
+		Notification notification = createNotification(title, msg);
+		notifications.notify(NOTIFIFACTION_ID, notification);
 	}
 }

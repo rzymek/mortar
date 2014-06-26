@@ -1,16 +1,26 @@
 package org.mortar.client.data;
 
+import java.util.Date;
+
+import org.mortar.common.CoordinateConversion;
+import org.mortar.common.CoordinateConversion.UTM;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
+import android.util.Log;
 
-public class DBHelper extends SQLiteOpenHelper {
+public class LocationLogger extends SQLiteOpenHelper {
+	private static final long MIN_INTERVAL = 5/* sec */* 1000L;
+	private static final float MIN_DISTANCE = 5/* m */;
 
-	public DBHelper(Context context) {
-		super(context, "GpsLog", null, 6);
+	private Location lastSavedLocation = null;
+
+	public LocationLogger(Context context) {
+		super(context, "GpsLog", null, 7);
 	}
 
 	@Override
@@ -28,6 +38,21 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 
 	public void put(Location location) {
+		UTM utm = CoordinateConversion.INST.latLon2UTM(location.getLatitude(), location.getLongitude());
+		long since = (new Date().getTime() - location.getTime()) / 1000;
+		Log.d("LOC", location.getProvider() + ":" + utm + " (" + since + "sec) " + location.getProvider());
+
+		if (lastSavedLocation != null) {
+			if (lastSavedLocation.distanceTo(location) < MIN_DISTANCE)
+				return;
+			if (location.getTime() - lastSavedLocation.getTime() < MIN_INTERVAL)
+				return;
+		}
+		lastSavedLocation = location;
+		persist(location);
+	}
+
+	private void persist(Location location) {
 		ContentValues values = new ContentValues();
 
 		values.put("lat", location.getLatitude());
@@ -64,8 +89,14 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 
 	public Cursor getLocations() {
-		String[] columns = { "lat", "lon", "timestamp", "accuracy", "altitude", "speed", "bearing","provider" };
+		String[] columns = { "lat", "lon", "timestamp", "accuracy", "altitude", "speed", "bearing", "sat", "provider" };
 		SQLiteDatabase db = getReadableDatabase();
 		return db.query("location", columns, null, null, null, null, "timestamp");
+	}
+
+	public Cursor getMessages() {
+		String[] columns = { "msg", "timestamp" };
+		SQLiteDatabase db = getReadableDatabase();
+		return db.query("log", columns, null, null, null, null, "timestamp");
 	}
 }

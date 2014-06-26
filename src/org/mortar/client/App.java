@@ -2,19 +2,21 @@ package org.mortar.client;
 
 import org.mortar.client.activities.InfoActivity;
 import org.mortar.common.msg.Explosion;
+
 import android.app.Application;
 import android.content.Intent;
 import android.location.Location;
 import android.util.Log;
 
 public class App extends Application {
+	private static final long CURRENT_LOCATION_TIMEOUT = 7 * 60 * 1000;
+	private static final int HIGH_ALERT_ON_EXPLOSION_SEC = 3 * 60;
 
-	private static final long TIMEOUT = 7 * 60 * 1000;
 	private Location currentBestLocation;
 	private Explosion explosion;
 
 	private void checkDistance() {
-		Log.i("APP","checkDistance");
+		Log.i("APP", "checkDistance");
 		if (currentBestLocation == null || explosion == null) {
 			return;
 		}
@@ -45,13 +47,13 @@ public class App extends Application {
 	}
 
 	public boolean isCurrentLocationValid() {
-		if(currentBestLocation == null)
+		if (currentBestLocation == null)
 			return false;
-		if(explosion == null || explosion.location == null)
+		if (explosion == null || explosion.location == null)
 			return true;
 		long timeSpan = Math.abs(currentBestLocation.getTime() - explosion.location.getTime());
-		boolean isValid = timeSpan > TIMEOUT;
-		Log.i("APP", "timeSpan: "+timeSpan/1000.0+"sec - "+(isValid ? "valid" : "obsolete"));
+		boolean isValid = timeSpan > CURRENT_LOCATION_TIMEOUT;
+		Log.i("APP", "timeSpan: " + timeSpan / 1000.0 + "sec - " + (isValid ? "valid" : "obsolete"));
 		return isValid;
 	}
 
@@ -73,7 +75,7 @@ public class App extends Application {
 	public void explosionEvent(Explosion explosion) {
 		this.explosion = explosion;
 		Intent intent = new Intent(this, GPSListenerService.class);
-		intent.putExtra(GPSListenerService.EXTRA_HIGH_ALERT, 3);
+		intent.putExtra(GPSListenerService.EXTRA_HIGH_ALERT, HIGH_ALERT_ON_EXPLOSION_SEC);
 		startService(intent);
 		checkDistance();
 	}
