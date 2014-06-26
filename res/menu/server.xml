@@ -11,6 +11,7 @@
         app:showAsAction="ifRoom"/>
     <item 
         android:id="@+id/menu_server_config"
+        android:icon="@android:drawable/ic_menu_preferences"
         android:orderInCategory="110"
         android:title="@string/config"
         app:showAsAction="never"/>
@@ -19,6 +20,12 @@
         android:orderInCategory="105"
         android:icon="@android:drawable/ic_menu_edit"
         android:title="@string/target_numbers"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/menu_server_current_location"
+        android:orderInCategory="130"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:title="@string/current_location"
         app:showAsAction="ifRoom"/>
     
 </menu>

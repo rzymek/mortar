@@ -54,7 +54,10 @@
             android:id="@+id/prepareButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Prepare" />
+            android:text="Prepare" >
+
+            <requestFocus />
+        </Button>
 
         <Button
             android:id="@+id/fireButton"
@@ -69,7 +72,6 @@
             android:text="507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:typeface="monospace" />
-
     </LinearLayout>
 
 </ScrollView>

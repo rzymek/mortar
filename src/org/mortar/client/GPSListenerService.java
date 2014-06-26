@@ -34,6 +34,10 @@ import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 public class GPSListenerService extends Service {
+	private static enum State {
+		HIGH_ALERT, LOW_ALERT, OFF
+	}
+	private State state = State.OFF;
 	
 	protected static final int GPS_ON = 61;
 	protected static final int GPS_OFF = 60;

@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.mortar.client.App;
+import org.mortar.client.AbstractLocationListener;
 import org.mortar.client.R;
 import org.mortar.client.data.GsmMessage;
 import org.mortar.common.CoordinateConversion;
@@ -21,8 +21,14 @@ import org.mortar.common.msg.Prepare;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
+import android.location.GpsStatus.Listener;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -40,8 +46,10 @@ import android.widget.TextView;
 public class ServerActivity extends Activity {
 	private static final int RC_SENT = 100;
 	private static final int RC_DELIVERY_REPORT = 101;
+
 	private List<String> clients;
 	public Map<String, String> clientStatus = new HashMap<>();
+
 	private TextView statusView;
 	private TextView utmZoneText;
 	private TextView eastingText;
@@ -49,6 +57,7 @@ public class ServerActivity extends Activity {
 	private TextView killZoneDiameterText;
 	private TextView warrningDiameterText;
 
+	private LocationManager gps;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -64,35 +73,32 @@ public class ServerActivity extends Activity {
 		findViewById(R.id.fireButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				broadcast(createFireMessage());
+				try {
+					broadcast(createFireMessage());
+				} catch (Exception ex) {
+					Utils.handle(ex, getApplicationContext());
+				}
 			}
 		});
 		findViewById(R.id.prepareButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				broadcast(new Prepare(10*60));
+				broadcast(new Prepare(10 * 60));
 			}
 		});
 		clients = loadClientNumbers();
 		updateStatus();
 
-		LocationManager location = (LocationManager) getSystemService(LOCATION_SERVICE);
-		Location lastKnownLocation = location.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-		if (lastKnownLocation != null) {
-			UTM utm = CoordinateConversion.INST.latLon2UTM(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+		gps = (LocationManager) getSystemService(LOCATION_SERVICE);
+		setLocation(gps.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER));
+	}
+
+	private void setLocation(Location Location) {
+		if (Location != null) {
+			UTM utm = CoordinateConversion.INST.latLon2UTM(Location.getLatitude(), Location.getLongitude());
 			utmZoneText.setText(utm.longZone + " " + utm.latZone);
 			eastingText.setText("" + utm.easting);
 			northingText.setText("" + utm.northing);
-		}
-	}
-
-	protected void testHit() {
-		try {
-			App app = (App) getApplication();
-			Explosion msg = createFireMessage();
-			app.explosionEvent(msg);
-		} catch (Exception ex) {
-			Utils.handle(ex, this);
 		}
 	}
 
@@ -213,19 +219,68 @@ public class ServerActivity extends Activity {
 		return true;
 	}
 
+	private final AbstractLocationListener currentLocation = new AbstractLocationListener() {
+		@Override
+		public void onLocationChanged(Location location) {
+			setLocation(location);
+			stopGps();
+			if (progressDialog != null) {
+				progressDialog.dismiss();
+			}
+			Utils.toast("Accuracy: " + (int) location.getAccuracy() + "m", getApplicationContext());
+		}
+	};
+	private Listener satelitelistener = new GpsStatus.Listener() {
+		private GpsStatus status;
+
+		@Override
+		public void onGpsStatusChanged(int event) {
+			status = gps.getGpsStatus(status);
+			int used = 0;
+			int max = 0;
+			for (GpsSatellite sat : status.getSatellites()) {
+				if (sat.usedInFix())
+					used++;
+				max++;
+			}
+			progressDialog.setProgress(used);
+			progressDialog.setMessage("Acquiring location "+used+"/"+max);
+		}
+	};
+
+	private ProgressDialog progressDialog = null;
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.menu_server_config) {
+		switch (id) {
+		case R.id.menu_server_config:
 			startActivity(new Intent(this, ConfigActivity.class));
 			return true;
-		} else if (id == R.id.menu_server_send) {
+		case R.id.menu_server_send:
 			broadcast(new ConfigMessage(this));
-		} else if (id == R.id.menu_server_numbers) {
+			return true;
+		case R.id.menu_server_current_location: {
+			gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, currentLocation);
+			gps.addGpsStatusListener(satelitelistener);
+			progressDialog = ProgressDialog.show(this, "GPS", "Acquiring location", false, true, new OnCancelListener() {
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					stopGps();
+				}
+			});
+			progressDialog.setMax(5);
+			return true;
+		}
+		case R.id.menu_server_numbers:
 			startActivity(new Intent(this, NumbersActivity.class));
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void stopGps() {
+		gps.removeUpdates(currentLocation);
+		gps.removeGpsStatusListener(satelitelistener);
 	}
 
 }
