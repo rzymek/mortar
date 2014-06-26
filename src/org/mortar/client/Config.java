@@ -6,8 +6,7 @@ import android.preference.PreferenceManager;
 
 public enum Config {
 	//@formatter:off
-	PASSIVE_LOC_MIN_INTERVAL(1), 
-	SCREEN_GPS_CONTROL(true);
+	HIGH_ALERT_SEC(5*60);
 	//@formatter:on
 
 	public final Class<?> type;

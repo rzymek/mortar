@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.mortar.client.AbstractLocationListener;
+import org.mortar.client.Config;
 import org.mortar.client.R;
+import org.mortar.client.Config.Read;
 import org.mortar.client.data.GsmMessage;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
@@ -45,8 +47,7 @@ import android.widget.TextView;
 
 public class ServerActivity extends Activity {
 	private static final int RC_SENT = 100;
-	private static final int RC_DELIVERY_REPORT = 101;
-	protected static final int PREPARE_SECONDS = 10;//TODO: increase
+	private static final int RC_DELIVERY_REPORT = 101;	
 
 	private List<String> clients;
 	public Map<String, String> clientStatus = new HashMap<>();
@@ -59,6 +60,7 @@ public class ServerActivity extends Activity {
 	private TextView warrningDiameterText;
 
 	private LocationManager gps;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -84,7 +86,8 @@ public class ServerActivity extends Activity {
 		findViewById(R.id.prepareButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				broadcast(new Prepare(PREPARE_SECONDS));
+				Config.Read cfg = new Config.Read(ServerActivity.this);
+				broadcast(new Prepare(cfg.get(Config.HIGH_ALERT_SEC)));
 			}
 		});
 		clients = loadClientNumbers();
@@ -245,11 +248,12 @@ public class ServerActivity extends Activity {
 				max++;
 			}
 			progressDialog.setProgress(used);
-			progressDialog.setMessage("Acquiring location "+used+"/"+max);
+			progressDialog.setMessage("Acquiring location " + used + "/" + max);
 		}
 	};
 
 	private ProgressDialog progressDialog = null;
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();

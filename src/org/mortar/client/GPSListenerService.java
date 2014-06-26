@@ -3,7 +3,6 @@ package org.mortar.client;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
-import static org.mortar.client.Config.SCREEN_GPS_CONTROL;
 
 import java.util.Date;
 
@@ -250,9 +249,7 @@ public class GPSListenerService extends Service {
 		theFilter.addAction(Intent.ACTION_SCREEN_ON);
 		theFilter.addAction(Intent.ACTION_SCREEN_OFF);
 
-		if (config.is(SCREEN_GPS_CONTROL)) {
-			getApplicationContext().registerReceiver(screenReceiver, theFilter);
-		}
+		getApplicationContext().registerReceiver(screenReceiver, theFilter);
 	}
 
 	public void reload() {
