@@ -6,7 +6,6 @@ import static android.location.LocationManager.PASSIVE_PROVIDER;
 
 import java.util.Date;
 
-import org.mortar.client.Config.Read;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.data.LocationLogger;
 import org.mortar.common.CoordinateConversion;
@@ -64,7 +63,6 @@ public class GPSListenerService extends Service {
 	private SateliteListener sateliteListener;
 
 	private Handler handler;
-	private Read config;
 	private LocationLogger logger;
 
 	// ========================================================================================================
@@ -114,7 +112,6 @@ public class GPSListenerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		config = new Config.Read(this);
 		logger = new LocationLogger(this);
 		gps = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		gps.addGpsStatusListener(sateliteListener);
@@ -240,16 +237,20 @@ public class GPSListenerService extends Service {
 	}
 
 	private void registerScreenListener() {
-		try {
-			getApplicationContext().unregisterReceiver(screenReceiver);
-		} catch (IllegalArgumentException e) {
-			// not registered - ignore
-		}
+		unregisterScreenListener();
 		final IntentFilter theFilter = new IntentFilter();
 		theFilter.addAction(Intent.ACTION_SCREEN_ON);
 		theFilter.addAction(Intent.ACTION_SCREEN_OFF);
 
 		getApplicationContext().registerReceiver(screenReceiver, theFilter);
+	}
+
+	protected void unregisterScreenListener() {
+		try {
+			getApplicationContext().unregisterReceiver(screenReceiver);
+		} catch (IllegalArgumentException e) {
+			// not registered - ignore
+		}
 	}
 
 	public void reload() {
@@ -261,7 +262,11 @@ public class GPSListenerService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		logger.log("listener destroyed");
+		logger.log("shutting down");
+		transitionTo(State.OFF);
+		gps.removeGpsStatusListener(sateliteListener);
+		gps.removeUpdates(otherProvidersListener);
+		unregisterScreenListener();	
 		logger.close();
 	}
 
