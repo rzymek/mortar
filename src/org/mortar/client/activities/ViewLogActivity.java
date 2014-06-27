@@ -20,6 +20,9 @@ import org.mortar.client.data.LocationLogger;
 import org.mortar.common.Utils;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -94,8 +97,18 @@ public class ViewLogActivity extends ActionBarActivity {
 				export();
 				break;
 			case R.id.action_reset:
-				logger.reset();
-				refresh();
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle("Mortar");
+				builder.setMessage(R.string.reset_log);
+				builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
+					@Override
+					public void onClick(DialogInterface arg0, int arg1) {
+						logger.reset();
+						refresh();
+					}
+				});
+				builder.setNegativeButton(android.R.string.cancel, null);
+				builder.create().show();
 				break;
 			case R.id.menu_view_quit:
 				stopService(new Intent(this, GPSListenerService.class));
