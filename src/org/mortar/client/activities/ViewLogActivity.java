@@ -10,7 +10,6 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -105,14 +104,20 @@ public class ViewLogActivity extends ActionBarActivity {
 		return true;
 	}
 
-	private void export() {
-		new AsyncTask<Void, Exception, File[]>() {
+	private class Logs {
+		File gpx;
+		CharSequence log;
+	}
 
+	private void export() {
+		new AsyncTask<Void, Exception, Logs>() {
 			@Override
-			protected File[] doInBackground(Void... params) {
+			protected Logs doInBackground(Void... params) {
 				try {
-					File[] files = { exportGPX(), exportLog(), };
-					return files;
+					Logs logs = new Logs();
+					logs.gpx = exportGPX();
+					logs.log = getFullMsgLog();
+					return logs;
 				} catch (Exception ex) {
 					publishProgress(ex);
 					return null;
@@ -125,49 +130,35 @@ public class ViewLogActivity extends ActionBarActivity {
 			}
 
 			@Override
-			protected void onPostExecute(File[] attachements) {
-				if (attachements == null)
+			protected void onPostExecute(Logs logs) {
+				if (logs == null) {
 					return;
-				final ArrayList<Uri> uris = new ArrayList<>(attachements.length);
-				for (File file : attachements) {
-					uris.add(Uri.fromFile(file));
 				}
 				Intent i = new Intent(Intent.ACTION_SEND);
 				i.setType("message/rfc822");
-				i.putExtra(Intent.EXTRA_EMAIL, new String[] { "rzymek+mortar@gmail.com" });
+				i.putExtra(Intent.EXTRA_EMAIL, new String[] {
+					"rzymek+mortar@gmail.com"
+				});
 				i.putExtra(Intent.EXTRA_SUBJECT, "mortar client log");
-				i.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+				i.putExtra(Intent.EXTRA_TEXT, logs.log);
+				i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(logs.gpx));
 				startActivity(Intent.createChooser(i, "Send GPX..."));
 			}
 		}.execute();
 	}
 
-	protected File exportLog() throws IOException {
+	protected CharSequence getFullMsgLog() throws IOException {
 		Cursor cursor = db.getMessages();
-		File outDir = new File(Environment.getExternalStorageDirectory(), "mortar");
-		outDir.mkdirs();
+		StringBuilder out = new StringBuilder(cursor.getCount() * 50);
 		try {
-			final SimpleDateFormat filenameFmt = new SimpleDateFormat("yyyyMMdd_HHmm'.log'", Locale.ENGLISH);
-
-			final SimpleDateFormat dateTimeFmt = new SimpleDateFormat("'['yyyy-MM-dd HH:mm:ss']'", Locale.ENGLISH);
-			final Date now = new Date();
-			String filename = filenameFmt.format(now);
-
-			File file = new File(outDir, filename);
-			FileOutputStream stream = new FileOutputStream(file);
-			Writer out = new OutputStreamWriter(stream);
-			try {
-				while (cursor.moveToNext()) {
-					String msg = cursor.getString(0);
-					long timestamp = cursor.getLong(1);
-					String dateTime = dateTimeFmt.format(new Date(timestamp));
-					out.append(dateTime).append(msg).append('\n');
-				}
-			} finally {
-				out.close();
-				stream.close();
+			final SimpleDateFormat dateTimeFmt = new SimpleDateFormat("HH:mm:ss'('MM.dd')' ", Locale.ENGLISH);
+			while (cursor.moveToNext()) {
+				String msg = cursor.getString(0);
+				long timestamp = cursor.getLong(1);
+				String dateTime = dateTimeFmt.format(new Date(timestamp));
+				out.append(dateTime).append(msg).append('\n');
 			}
-			return file;
+			return out;
 		} finally {
 			cursor.close();
 		}
@@ -204,7 +195,8 @@ public class ViewLogActivity extends ActionBarActivity {
 					String provider = cursor.getString(8);
 
 					String dateTime = dateTimeFmt.format(new Date(timestamp));
-					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing, accuracy, sat, provider));
+					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing,
+							accuracy, sat, provider));
 				}
 				copyRawTemplateTo(R.raw.gpx_tail, out);
 			} finally {
