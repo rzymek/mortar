@@ -11,7 +11,6 @@ import java.util.Map;
 import org.mortar.client.AbstractLocationListener;
 import org.mortar.client.Config;
 import org.mortar.client.R;
-import org.mortar.client.Config.Read;
 import org.mortar.client.data.GsmMessage;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;

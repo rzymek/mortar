@@ -113,7 +113,7 @@ public class GPSListenerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		logger = new LocationLogger(this);
+		logger = ((App)getApplication()).logger;
 		gps = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		gps.addGpsStatusListener(sateliteListener);
 
@@ -269,7 +269,6 @@ public class GPSListenerService extends Service {
 		unregisterScreenListener();
 		NotificationManager notifications = (NotificationManager) GPSListenerService.this.getSystemService(NOTIFICATION_SERVICE);
 		notifications.cancelAll();
-		logger.close();
 	}
 
 	@Override

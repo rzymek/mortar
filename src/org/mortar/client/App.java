@@ -1,6 +1,7 @@
 package org.mortar.client;
 
 import org.mortar.client.activities.InfoActivity;
+import org.mortar.client.data.LocationLogger;
 import org.mortar.common.msg.Explosion;
 
 import android.app.Application;
@@ -14,7 +15,14 @@ public class App extends Application {
 
 	private Location currentBestLocation;
 	private Explosion explosion;
+	public LocationLogger logger;
 
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		logger = new LocationLogger(this);
+	}
+	
 	private void checkDistance() {
 		Log.i("APP", "checkDistance");
 		if (currentBestLocation == null || explosion == null) {
@@ -24,6 +32,7 @@ public class App extends Application {
 			return;
 		}
 		float distance = currentBestLocation.distanceTo(explosion.location);
+		logger.log(String.format("distance: %.0f",distance));
 		Log.i("APP", "distance: "+distance);
 		if (distance < explosion.killZoneDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
@@ -34,6 +43,7 @@ public class App extends Application {
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.hit);
 			result.putExtra(InfoActivity.Key.BEEP.name(), true);
 			result.putExtra(InfoActivity.Key.CONTINIOUS_VIBRATION.name(), true);
+			logger.log("KIA");
 			show(result);
 		} else if (distance < explosion.warrningDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);

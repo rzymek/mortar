@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.mortar.client.App;
 import org.mortar.client.GPSListenerService;
 import org.mortar.client.R;
 import org.mortar.client.data.LocationLogger;
@@ -40,8 +41,7 @@ public class ViewLogActivity extends ActionBarActivity {
 	 * http://code.google.com/p/osmtracker-android/issues/detail?id=15
 	 */
 	public final static int HDOP_APPROXIMATION_FACTOR = 4;
-
-	private LocationLogger db;
+	private LocationLogger logger;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,20 +49,14 @@ public class ViewLogActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_view_log);
 
 		if (savedInstanceState == null) {
-			db = new LocationLogger(this);
+			logger = ((App) getApplication()).logger;
 			refresh();
 		}
 	}
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		db.close();
-	}
-
 	private void refresh() {
 		int limit = 500;
-		Cursor cursor = db.getLog(limit);
+		Cursor cursor = logger.getLog(limit);
 		try {
 			StringBuilder buf = new StringBuilder();
 			SimpleDateFormat fmt = new SimpleDateFormat("MM.dd HH:mm:ss", Locale.ENGLISH);
@@ -100,7 +94,7 @@ public class ViewLogActivity extends ActionBarActivity {
 				export();
 				break;
 			case R.id.action_reset:
-				db.reset();
+				logger.reset();
 				refresh();
 				break;
 			case R.id.menu_view_quit:
@@ -157,7 +151,7 @@ public class ViewLogActivity extends ActionBarActivity {
 	}
 
 	protected CharSequence getFullMsgLog() throws IOException {
-		Cursor cursor = db.getMessages();
+		Cursor cursor = logger.getMessages();
 		StringBuilder out = new StringBuilder(cursor.getCount() * 50);
 		try {
 			final SimpleDateFormat dateTimeFmt = new SimpleDateFormat("HH:mm:ss'('MM.dd')' ", Locale.ENGLISH);
@@ -175,7 +169,7 @@ public class ViewLogActivity extends ActionBarActivity {
 
 	@SuppressLint("WorldReadableFiles")
 	private File exportGPX() throws IOException {
-		Cursor cursor = db.getLocations();
+		Cursor cursor = logger.getLocations();
 		File outDir = new File(Environment.getExternalStorageDirectory(), "mortar");
 		outDir.mkdirs();
 		try {
