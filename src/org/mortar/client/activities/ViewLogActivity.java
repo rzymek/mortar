@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.mortar.client.GPSListenerService;
 import org.mortar.client.R;
 import org.mortar.client.data.LocationLogger;
 import org.mortar.common.Utils;
@@ -91,15 +92,23 @@ public class ViewLogActivity extends ActionBarActivity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_refresh) {
-			refresh();
-		} else if (id == R.id.action_export) {
-			export();
-		} else if (id == R.id.action_reset) {
-			db.reset();
-			refresh();
-		} else {
-			return super.onOptionsItemSelected(item);
+		switch (id) {
+			case R.id.action_refresh:
+				refresh();
+				break;
+			case R.id.action_export:
+				export();
+				break;
+			case R.id.action_reset:
+				db.reset();
+				refresh();
+				break;
+			case R.id.menu_view_quit:
+				stopService(new Intent(this, GPSListenerService.class));
+				finish();
+				break;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 		return true;
 	}

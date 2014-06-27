@@ -1,6 +1,8 @@
 package org.mortar.client.activities;
 
 import org.mortar.client.GPSListenerService;
+import org.mortar.client.R;
+import org.mortar.common.Utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 public class LuncherActivity extends Activity {
 	public static final String EXTRA_EXIT = "exit";
@@ -20,12 +21,11 @@ public class LuncherActivity extends Activity {
 		Intent intent = getIntent();
 		if (intent.getBooleanExtra(EXTRA_EXIT, false)) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Mortar Client");
+			builder.setTitle("Mortar");
 			builder.setMessage("Exit?");
 			builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface arg0, int arg1) {
-					Toast.makeText(getApplicationContext(), "MortarClient: exit", Toast.LENGTH_SHORT).show();
 					stopService(new Intent(thiz, GPSListenerService.class));
 					finish();
 				}
@@ -38,8 +38,8 @@ public class LuncherActivity extends Activity {
 			});
 			builder.create().show();
 		} else {
-			Toast.makeText(getApplicationContext(), "MortarClient: started", Toast.LENGTH_SHORT).show();
 			startService(new Intent(this, GPSListenerService.class));
+			Utils.toast(getString(R.string.app_started), this);
 			finish();
 		}
 	}

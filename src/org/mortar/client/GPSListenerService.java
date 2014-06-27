@@ -7,6 +7,7 @@ import static android.location.LocationManager.PASSIVE_PROVIDER;
 import java.util.Date;
 
 import org.mortar.client.activities.LuncherActivity;
+import org.mortar.client.activities.ViewLogActivity;
 import org.mortar.client.data.LocationLogger;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
@@ -160,8 +161,7 @@ public class GPSListenerService extends Service {
 		if (msg != null) {
 			notificationText = msg;
 		}
-		Intent resultIntent = new Intent(this, LuncherActivity.class);
-		resultIntent.putExtra(LuncherActivity.EXTRA_EXIT, true);
+		Intent resultIntent = new Intent(this, ViewLogActivity.class);
 		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		/*
@@ -266,7 +266,9 @@ public class GPSListenerService extends Service {
 		transitionTo(State.OFF);
 		gps.removeGpsStatusListener(sateliteListener);
 		gps.removeUpdates(otherProvidersListener);
-		unregisterScreenListener();	
+		unregisterScreenListener();
+		NotificationManager notifications = (NotificationManager) GPSListenerService.this.getSystemService(NOTIFICATION_SERVICE);
+		notifications.cancelAll();
 		logger.close();
 	}
 

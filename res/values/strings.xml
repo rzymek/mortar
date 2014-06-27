@@ -16,5 +16,7 @@
     <string name="export">Export</string>
     <string name="epicenter">Epicentrum</string>
     <string name="current_location">Target here</string>
+    <string name="shutdown">Shutdown</string>
+    <string name="app_started">Mortar started</string>
 
 </resources>
