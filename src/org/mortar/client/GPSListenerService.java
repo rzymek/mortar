@@ -161,7 +161,7 @@ public class GPSListenerService extends Service {
 			notificationText = msg;
 		}
 		Intent resultIntent = new Intent(this, LuncherActivity.class);
-		resultIntent.putExtra(LuncherActivity.Cmd.class.getSimpleName(), LuncherActivity.Cmd.EXIT.ordinal());
+		resultIntent.putExtra(LuncherActivity.EXTRA_EXIT, true);
 		resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		/*

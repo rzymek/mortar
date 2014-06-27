@@ -11,16 +11,14 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 public class LuncherActivity extends Activity {
-	public static enum Cmd {
-		EXIT
-	}
+	public static final String EXTRA_EXIT = "exit";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		final LuncherActivity thiz = LuncherActivity.this;
 		Intent intent = getIntent();
-		if (intent.getIntExtra(Cmd.class.getSimpleName(), -1) == Cmd.EXIT.ordinal()) {
+		if (intent.getBooleanExtra(EXTRA_EXIT, false)) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Mortar Client");
 			builder.setMessage("Exit?");
