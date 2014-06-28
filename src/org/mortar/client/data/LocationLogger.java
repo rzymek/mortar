@@ -27,7 +27,7 @@ public class LocationLogger extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL("create table location(lat real, lon real, timestamp integer, accuracy real,"
 				+ "altitude real, speed real, bearing real, sat integer, provider text)");
-		db.execSQL("create table log(msg text, timestamp integer)");
+		db.execSQL("create table log(msg text, timestamp integer)");		
 	}
 
 	@Override

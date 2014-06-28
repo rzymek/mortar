@@ -2,6 +2,7 @@ package org.mortar.common;
 
 import java.io.UnsupportedEncodingException;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,6 +28,14 @@ public class Utils {
 
 	public static String n(String string) {
 		return string == null ? "" : string;
+	}
+
+	@SuppressLint("DefaultLocale")
+	public static String getSystemInfo() {
+		return String.format("Android %s-%s (SDK: %d), kernel %s\n%s %s %s (%s)[%s]",
+				android.os.Build.VERSION.CODENAME, android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT,
+				System.getProperty("os.version"), android.os.Build.MANUFACTURER, android.os.Build.BRAND,
+				android.os.Build.MODEL, android.os.Build.PRODUCT, android.os.Build.HARDWARE);
 	}
 
 }

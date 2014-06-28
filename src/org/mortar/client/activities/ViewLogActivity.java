@@ -197,7 +197,7 @@ public class ViewLogActivity extends ActionBarActivity {
 			FileOutputStream stream = new FileOutputStream(file);
 			Writer out = new OutputStreamWriter(stream);
 			try {
-				copyRawTemplateTo(R.raw.gpx_head, out, nameFmt.format(now));
+				copyRawTemplateTo(R.raw.gpx_head, out, nameFmt.format(now), Utils.getSystemInfo());
 				String trkpt = getRawTemplate(R.raw.gpx_trkpt);
 				while (cursor.moveToNext()) {
 					double lat = cursor.getDouble(0);
