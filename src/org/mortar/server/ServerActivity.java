@@ -36,7 +36,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
-import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,7 +45,8 @@ import android.widget.TextView;
 
 public class ServerActivity extends Activity {
 	private static final int RC_SENT = 100;
-	private static final int RC_DELIVERY_REPORT = 101;	
+	private static final int RC_DELIVERY_REPORT = 101;
+	private static final int RC_TARGETS_UPDATED = 102;
 
 	private List<String> clients;
 	public Map<String, String> clientStatus = new HashMap<>();
@@ -134,38 +134,34 @@ public class ServerActivity extends Activity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		String number = data.getStringExtra("number");
 		switch (requestCode) {
-		case RC_SENT:
-			clientStatus.put(number, clientStatus.get(number) + " sent(" + resultCodeDesc(resultCode) + ")");
-			break;
-		case RC_DELIVERY_REPORT:
-			byte[] pdu = data.getByteArrayExtra("pdu");
-			String body = "";
-			if (pdu != null) {
-				SmsMessage reportSms = SmsMessage.createFromPdu(pdu);
-				body = reportSms.getMessageBody();
+			case RC_SENT:
+			case RC_DELIVERY_REPORT: {
+				String number = data.getStringExtra("number");
+				String msg = (requestCode == RC_SENT ? "sent" : "delivered");
+				clientStatus.put(number, msg + "(" + resultCodeDesc(resultCode) + ")");
+				updateStatus();
+				break;
 			}
-			clientStatus.put(number, clientStatus.get(number) + " delivered(" + resultCodeDesc(resultCode) + "):" + body);
-			break;
-		default:
-			return;
+			case RC_TARGETS_UPDATED:
+				clients = loadClientNumbers();
+				updateStatus();
+				break;
 		}
-		updateStatus();
 	}
 
 	private String resultCodeDesc(int resultCode) {
 		switch (resultCode) {
-		case RESULT_OK:
-			return "OK";
-		case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-			return "GENERIC_FAILURE";
-		case SmsManager.RESULT_ERROR_NO_SERVICE:
-			return "NO_SERVICE";
-		case SmsManager.RESULT_ERROR_NULL_PDU:
-			return "NULL_PDU";
-		case SmsManager.RESULT_ERROR_RADIO_OFF:
-			return "RADIO_OFF";
+			case RESULT_OK:
+				return "OK";
+			case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+				return "GENERIC_FAILURE";
+			case SmsManager.RESULT_ERROR_NO_SERVICE:
+				return "NO_SERVICE";
+			case SmsManager.RESULT_ERROR_NULL_PDU:
+				return "NULL_PDU";
+			case SmsManager.RESULT_ERROR_RADIO_OFF:
+				return "RADIO_OFF";
 		}
 		return "" + resultCode;
 	}
@@ -198,7 +194,8 @@ public class ServerActivity extends Activity {
 				Intent data = new Intent();
 				data.putExtra("number", phone);
 				PendingIntent sent = createPendingResult(RC_SENT, data, PendingIntent.FLAG_UPDATE_CURRENT);
-				PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data, PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data,
+						PendingIntent.FLAG_UPDATE_CURRENT);
 				short smsPort = (short) R.integer.sms_port;
 				smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
 			}
@@ -257,27 +254,28 @@ public class ServerActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
 		switch (id) {
-		case R.id.menu_server_config:
-			startActivity(new Intent(this, ConfigActivity.class));
-			return true;
-		case R.id.menu_server_send:
-			broadcast(new ConfigMessage(this));
-			return true;
-		case R.id.menu_server_current_location: {
-			gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, currentLocation);
-			gps.addGpsStatusListener(satelitelistener);
-			progressDialog = ProgressDialog.show(this, "GPS", "Acquiring location", false, true, new OnCancelListener() {
-				@Override
-				public void onCancel(DialogInterface dialog) {
-					stopGps();
-				}
-			});
-			progressDialog.setMax(5);
-			return true;
-		}
-		case R.id.menu_server_numbers:
-			startActivity(new Intent(this, NumbersActivity.class));
-			return true;
+			case R.id.menu_server_config:
+				startActivity(new Intent(this, ConfigActivity.class));
+				return true;
+			case R.id.menu_server_send:
+				broadcast(new ConfigMessage(this));
+				return true;
+			case R.id.menu_server_current_location: {
+				gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, currentLocation);
+				gps.addGpsStatusListener(satelitelistener);
+				progressDialog = ProgressDialog.show(this, "GPS", "Acquiring location", false, true,
+						new OnCancelListener() {
+							@Override
+							public void onCancel(DialogInterface dialog) {
+								stopGps();
+							}
+						});
+				progressDialog.setMax(5);
+				return true;
+			}
+			case R.id.menu_server_numbers:
+				startActivityForResult(new Intent(this, NumbersActivity.class), RC_TARGETS_UPDATED);
+				return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}

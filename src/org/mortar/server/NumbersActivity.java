@@ -1,7 +1,6 @@
 package org.mortar.server;
 
 import org.mortar.client.R;
-import org.mortar.common.Utils;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -40,7 +39,8 @@ public class NumbersActivity extends ActionBarActivity {
 			Editor edit = shared.edit();
 			edit.putString(EXTRA_NUMBERS, numbersText.getText().toString());
 			edit.commit();
-			Utils.toast("Saved", this);
+			setResult(RESULT_OK);
+			finish();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
