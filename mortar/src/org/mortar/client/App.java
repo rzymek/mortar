@@ -9,6 +9,10 @@ import android.content.Intent;
 import android.location.Location;
 import android.util.Log;
 
+import com.parse.Parse;
+import com.parse.ParseInstallation;
+import com.parse.PushService;
+
 public class App extends Application {
 	private static final long CURRENT_LOCATION_TIMEOUT = 7 * 60 * 1000;
 	private static final int HIGH_ALERT_ON_EXPLOSION_SEC = 3 * 60;
@@ -21,8 +25,11 @@ public class App extends Application {
 	public void onCreate() {
 		super.onCreate();
 		logger = new LocationLogger(this);
+		Parse.initialize(this, "zh0WoCJmlUEZcyUcfcfJxsV0LzlWogRxT9eskueX", "sUr8eVDrVmKbf3vgkfBQ15O6eRPfT2nPGnekLVP2");
+		PushService.setDefaultPushCallback(this, PushCallbackActivity.class);
+		ParseInstallation.getCurrentInstallation().saveInBackground();
 	}
-	
+
 	private void checkDistance() {
 		Log.i("APP", "checkDistance");
 		if (currentBestLocation == null || explosion == null) {
@@ -32,13 +39,12 @@ public class App extends Application {
 			return;
 		}
 		float distance = currentBestLocation.distanceTo(explosion.location);
-		logger.log(String.format("distance: %.0f",distance));
-		Log.i("APP", "distance: "+distance);
+		logger.log(String.format("distance: %.0f", distance));
+		Log.i("APP", "distance: " + distance);
 		if (distance < explosion.killZoneDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
-			String text = "KIA\n"+getString(R.string.epicenter)+": " + (int) distance + "m"
-					+ "\nStrefa KIA:"+explosion.killZoneDiameter+"m"
-					+ "\nSłychać na:"+explosion.warrningDiameter;
+			String text = "KIA\n" + getString(R.string.epicenter) + ": " + (int) distance + "m" + "\nStrefa KIA:"
+					+ explosion.killZoneDiameter + "m" + "\nSłychać na:" + explosion.warrningDiameter;
 			result.putExtra(InfoActivity.Key.MESSAGE.name(), text);
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.hit);
 			result.putExtra(InfoActivity.Key.BEEP.name(), true);
@@ -47,9 +53,8 @@ public class App extends Application {
 			show(result);
 		} else if (distance < explosion.warrningDiameter) {
 			Intent result = new Intent(this, InfoActivity.class);
-			String text = "Ostrzał w okolicy!\nEpicentrum: " + (int) distance + "m"
-					+ "\nStrefa KIA:"+explosion.killZoneDiameter+"m"
-					+ "\nSłychać na:"+explosion.warrningDiameter;
+			String text = "Ostrzał w okolicy!\nEpicentrum: " + (int) distance + "m" + "\nStrefa KIA:"
+					+ explosion.killZoneDiameter + "m" + "\nSłychać na:" + explosion.warrningDiameter;
 			result.putExtra(InfoActivity.Key.MESSAGE.name(), text);
 			result.putExtra(InfoActivity.Key.COLOR.name(), R.color.warrning);
 			show(result);
@@ -78,7 +83,7 @@ public class App extends Application {
 	}
 
 	public void setCurrentBestLocation(Location currentBestLocation) {
-		this.currentBestLocation = currentBestLocation;		
+		this.currentBestLocation = currentBestLocation;
 		checkDistance();
 	}
 

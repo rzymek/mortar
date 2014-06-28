@@ -19,5 +19,7 @@
     <string name="shutdown">Shutdown</string>
     <string name="app_started">Mortar started</string>
     <string name="reset_log">Reset log?</string>
+    <string name="title_activity_push_callback">PushCallbackActivity</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>
