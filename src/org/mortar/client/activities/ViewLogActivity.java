@@ -53,11 +53,12 @@ public class ViewLogActivity extends ActionBarActivity {
 
 		if (savedInstanceState == null) {
 			logger = ((App) getApplication()).logger;
-			refresh();
 		}
 	}
 
-	private void refresh() {
+	@Override
+	protected void onResume() {
+		super.onResume();
 		int limit = 500;
 		Cursor cursor = logger.getLog(limit);
 		try {
@@ -91,7 +92,7 @@ public class ViewLogActivity extends ActionBarActivity {
 		int id = item.getItemId();
 		switch (id) {
 			case R.id.action_refresh:
-				refresh();
+				onResume();
 				break;
 			case R.id.action_export:
 				export();
@@ -104,7 +105,7 @@ public class ViewLogActivity extends ActionBarActivity {
 					@Override
 					public void onClick(DialogInterface arg0, int arg1) {
 						logger.reset();
-						refresh();
+						onResume();
 					}
 				});
 				builder.setNegativeButton(android.R.string.cancel, null);
@@ -164,7 +165,7 @@ public class ViewLogActivity extends ActionBarActivity {
 	}
 
 	protected CharSequence getFullMsgLog() throws IOException {
-		Cursor cursor = logger.getMessages();
+		Cursor cursor = logger.getLog(Integer.MAX_VALUE);
 		StringBuilder out = new StringBuilder(cursor.getCount() * 50);
 		try {
 			final SimpleDateFormat dateTimeFmt = new SimpleDateFormat("HH:mm:ss'('MM.dd')' ", Locale.ENGLISH);

@@ -25,6 +25,7 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -83,12 +84,36 @@ public class GPSListenerService extends Service {
 				logger.put(location);
 			}
 		}
+		@Override
+		public void onProviderEnabled(String provider) {
+			logger.log(provider+" ON");
+		}
+		@Override
+		public void onProviderDisabled(String provider) {
+			logger.log(provider+" off");
+		}
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+			logger.log(provider+" status="+status+": "+extras);
+		}
 	};
 
 	private LocationListener otherProvidersListener = new AbstractLocationListener() {
 		@Override
 		public void onLocationChanged(Location location) {
 			gpsListener.onLocationChanged(location);
+		}
+		@Override
+		public void onProviderEnabled(String provider) {
+			logger.log(provider+" ON");
+		}
+		@Override
+		public void onProviderDisabled(String provider) {
+			logger.log(provider+" off");
+		}
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+			logger.log(provider+" status="+status+": "+extras);
 		}
 	};
 
@@ -135,6 +160,7 @@ public class GPSListenerService extends Service {
 				String title = currentState.name();
 				String msg = " " + used + "/" + max;
 				updateNotification(title, msg);
+				logger.log("sat: "+used + "/" + max);
 			}
 		};
 		reload();

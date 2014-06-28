@@ -70,7 +70,7 @@ public class LocationLogger extends SQLiteOpenHelper {
 
 	public Cursor getLog(int limit) {
 		SQLiteDatabase db = getReadableDatabase();
-		String q = "SELECT substr(lat,0,10)||' '||substr(lon,0,10)||';'||sat,"
+		String q = "SELECT 'acc:'||substr(accuracy,0,8)||',spd:'||substr(speed,0,5)||',sat:'||sat,"
 				+ " timestamp FROM location UNION SELECT msg,timestamp FROM log ORDER BY timestamp desc LIMIT " + limit;
 		return db.rawQuery(q, null);
 	}
