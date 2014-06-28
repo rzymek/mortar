@@ -50,23 +50,34 @@
             android:inputType="number"
             android:text="300" />
 
-        <Button
-            android:id="@+id/prepareButton"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Prepare" >
+            android:orientation="horizontal" >
+	
+            
+            <Spinner 
+                android:id="@+id/server_spinner_channel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+            <Button
+                android:id="@+id/server_btn_prepare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Prepare" />
 
-            <requestFocus />
-        </Button>
-
-        <Button
-            android:id="@+id/fireButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="FIRE" />
+            <Button
+                android:id="@+id/server_btn_fire"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="FIRE" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/statusView"
+            android:id="@+id/server_view_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered\n507063286 - pending\n507063286 - sending\n507063286 - sent\n507063286 - delivered"

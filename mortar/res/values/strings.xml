@@ -21,5 +21,11 @@
     <string name="reset_log">Reset log?</string>
     <string name="title_activity_push_callback">PushCallbackActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="push">Push</string>
+
+    <string-array name="channels">
+        <item>sms</item>
+        <item>push</item>
+    </string-array>
 
 </resources>

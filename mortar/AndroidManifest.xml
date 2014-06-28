@@ -61,9 +61,12 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="org.mortar.client.SMSReceiver" >
+        <receiver android:name="org.mortar.client.SMSReceiver" android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
+                <action android:name="org.mortar.client.UPDATE_STATUS" />
+            </intent-filter>
+            <intent-filter>
+             <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
 
                 <data android:port="@integer/sms_port" />
                 <data android:scheme="sms" />
@@ -81,10 +84,6 @@
         <activity
             android:name="org.mortar.server.ConfigActivity"
             android:label="Mortart Config" >
-        </activity>
-        <activity
-            android:name="org.mortar.client.PushCallbackActivity"
-            android:label="@string/title_activity_push_callback" >
         </activity>
 
         <service android:name="com.parse.PushService" />

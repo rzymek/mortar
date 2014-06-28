@@ -11,7 +11,6 @@ import android.util.Log;
 
 import com.parse.Parse;
 import com.parse.ParseInstallation;
-import com.parse.PushService;
 
 public class App extends Application {
 	private static final long CURRENT_LOCATION_TIMEOUT = 7 * 60 * 1000;
@@ -26,8 +25,9 @@ public class App extends Application {
 		super.onCreate();
 		logger = new LocationLogger(this);
 		Parse.initialize(this, "zh0WoCJmlUEZcyUcfcfJxsV0LzlWogRxT9eskueX", "sUr8eVDrVmKbf3vgkfBQ15O6eRPfT2nPGnekLVP2");
-		PushService.setDefaultPushCallback(this, PushCallbackActivity.class);
 		ParseInstallation.getCurrentInstallation().saveInBackground();
+//		PushService.setDefaultPushCallback(this, PushCallbackActivity.class);
+//		PushService.subscribe(this, "mortar", PushCallbackActivity.class);
 	}
 
 	private void checkDistance() {

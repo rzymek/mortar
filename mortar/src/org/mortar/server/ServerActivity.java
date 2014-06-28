@@ -1,5 +1,6 @@
 package org.mortar.server;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -8,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
 import org.mortar.client.AbstractLocationListener;
 import org.mortar.client.Config;
 import org.mortar.client.R;
@@ -41,12 +43,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.parse.ParsePush;
 
 public class ServerActivity extends Activity {
 	private static final int RC_SENT = 100;
 	private static final int RC_DELIVERY_REPORT = 101;
 	private static final int RC_TARGETS_UPDATED = 102;
+	private static final int CHANNEL_SMS = 0;
+	private static final int CHANNEL_PUSH = 1;
 
 	private List<String> clients;
 	public Map<String, String> clientStatus = new HashMap<>();
@@ -59,20 +68,27 @@ public class ServerActivity extends Activity {
 	private TextView warrningDiameterText;
 
 	private LocationManager gps;
+	private Spinner channelSpinner;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_server);
 
-		statusView = (TextView) findViewById(R.id.statusView);
+		statusView = (TextView) findViewById(R.id.server_view_status);
 		utmZoneText = (TextView) findViewById(R.id.utmZoneText);
 		eastingText = (TextView) findViewById(R.id.eastingText);
 		northingText = (TextView) findViewById(R.id.northingText);
 		killZoneDiameterText = (TextView) findViewById(R.id.killZoneDiameterText);
 		warrningDiameterText = (TextView) findViewById(R.id.warrningDiameterText);
+		channelSpinner = (Spinner) findViewById(R.id.server_spinner_channel);
 
-		findViewById(R.id.fireButton).setOnClickListener(new OnClickListener() {
+		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.channels,
+				android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		channelSpinner.setAdapter(adapter);
+
+		findViewById(R.id.server_btn_fire).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				try {
@@ -82,7 +98,7 @@ public class ServerActivity extends Activity {
 				}
 			}
 		});
-		findViewById(R.id.prepareButton).setOnClickListener(new OnClickListener() {
+		findViewById(R.id.server_btn_prepare).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				Config.Read cfg = new Config.Read(ServerActivity.this);
@@ -176,32 +192,46 @@ public class ServerActivity extends Activity {
 
 	private void broadcast(final MortarMessage message) {
 		try {
-			if (clients.isEmpty()) {
-				Intent intent = new Intent("android.intent.action.DATA_SMS_RECEIVED");
-				intent.setData(Uri.parse("sms://0:" + R.integer.sms_port));
-				GsmMessage msg = new GsmMessage();
-				msg.contents = message.serialize();
-				msg.from = "me";
-				msg.timestamp = new Date().getTime();
-				intent.putExtra("mortar", msg);
-				sendBroadcast(intent);
-			}
-			final byte[] userData = message.serialize();
-			final SmsManager smsManager = SmsManager.getDefault();
-			for (String phone : clients) {
-				clientStatus.put(phone, "sending");
-				updateStatus();
-				Intent data = new Intent();
-				data.putExtra("number", phone);
-				PendingIntent sent = createPendingResult(RC_SENT, data, PendingIntent.FLAG_UPDATE_CURRENT);
-				PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data,
-						PendingIntent.FLAG_UPDATE_CURRENT);
-				short smsPort = (short) R.integer.sms_port;
-				smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
+			int selectedChannel = channelSpinner.getSelectedItemPosition();
+			if (selectedChannel == CHANNEL_SMS) {
+				sendToSelf(message);
+				final byte[] userData = message.serialize();
+				final SmsManager smsManager = SmsManager.getDefault();
+				for (String phone : clients) {
+					clientStatus.put(phone, "sending");
+					updateStatus();
+					Intent data = new Intent();
+					data.putExtra("number", phone);
+					PendingIntent sent = createPendingResult(RC_SENT, data, PendingIntent.FLAG_UPDATE_CURRENT);
+					PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data,
+							PendingIntent.FLAG_UPDATE_CURRENT);
+					short smsPort = (short) R.integer.sms_port;
+					smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
+				}
+			} else if (selectedChannel == CHANNEL_PUSH) {
+				Gson gson = new Gson();
+				String json = gson.toJson(message);
+				ParsePush push = new ParsePush();
+				push.setChannel("mortar");
+				JSONObject data = new JSONObject(json);
+				data.put("action", "org.mortar.client.UPDATE_STATUS");
+				push.setData(data);
+				push.sendInBackground();
 			}
 		} catch (Exception ex) {
 			Utils.handle(ex, this);
 		}
+	}
+
+	private void sendToSelf(final MortarMessage message) throws IOException {
+		Intent intent = new Intent("android.intent.action.DATA_SMS_RECEIVED");
+		intent.setData(Uri.parse("sms://0:" + R.integer.sms_port));
+		GsmMessage msg = new GsmMessage();
+		msg.contents = message.serialize();
+		msg.from = "local";
+		msg.timestamp = new Date().getTime();
+		intent.putExtra("mortar", msg);
+		sendBroadcast(intent);
 	}
 
 	private Explosion createFireMessage() {
@@ -257,7 +287,7 @@ public class ServerActivity extends Activity {
 			case R.id.menu_server_config:
 				startActivity(new Intent(this, ConfigActivity.class));
 				return true;
-			case R.id.menu_server_send:
+			case R.id.menu_server_send_config:
 				broadcast(new ConfigMessage(this));
 				return true;
 			case R.id.menu_server_current_location: {
