@@ -41,7 +41,7 @@ public class GPSListenerService extends Service {
 	private boolean isScreenOn = false;
 	private State currentState = State.LOW_ALERT;
 
-	private static final int NOTIFIFACTION_ID = 1337;
+	private static final int NOTIFIFACTION_ID = 81263183;
 	private static final int STOP_HIGH_ALERT = 100;
 
 	public static final String EXTRA_HIGH_ALERT = "high alert (sec)";
@@ -295,6 +295,8 @@ public class GPSListenerService extends Service {
 		unregisterScreenListener();
 		NotificationManager notifications = (NotificationManager) GPSListenerService.this.getSystemService(NOTIFICATION_SERVICE);
 		notifications.cancelAll();
+		notifications.cancel(NOTIFIFACTION_ID);
+		stopForeground(true);
 	}
 
 	@Override
