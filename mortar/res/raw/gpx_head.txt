@@ -5,6 +5,5 @@
     xmlns="http://www.topografix.com/GPX/1/1"
     xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" >
   <trk>
-    <name>%s</name>
-    <desc>%s</desc>
+    <name>%s</name><desc>%s</desc>
     <trkseg>

@@ -165,7 +165,7 @@ public class GPSListenerService extends Service {
 			}
 		};
 		reload();
-		logger.log("listener created");
+		logger.log("listener created\n"+Utils.getSystemInfo());
 	}
 
 	@Override
