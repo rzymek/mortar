@@ -25,7 +25,6 @@ import org.mortar.common.msg.Explosion;
 import org.mortar.common.msg.MortarMessage;
 import org.mortar.common.msg.Prepare;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -40,6 +39,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBarActivity;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -53,7 +53,7 @@ import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 import com.parse.ParseQuery;
 
-public class ServerActivity extends Activity {
+public class ServerActivity extends ActionBarActivity {
 	private static final int RC_SENT = 100;
 	private static final int RC_DELIVERY_REPORT = 101;
 	private static final int RC_TARGETS_UPDATED = 102;
