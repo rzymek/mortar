@@ -11,13 +11,13 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mortar.client.AbstractLocationListener;
 import org.mortar.client.App;
-import org.mortar.client.Config;
 import org.mortar.client.R;
 import org.mortar.client.data.GsmMessage;
+import org.mortar.client.utils.AbstractLocationListener;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
+import org.mortar.common.Config;
 import org.mortar.common.MortarMessage;
 import org.mortar.common.Utils;
 import org.mortar.common.msg.ConfigMessage;

@@ -1,4 +1,4 @@
-package org.mortar.client;
+package org.mortar.client.utils;
 
 import android.location.LocationListener;
 import android.os.Bundle;

@@ -14,9 +14,9 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.mortar.client.App;
-import org.mortar.client.GPSListenerService;
+import org.mortar.client.Logger;
 import org.mortar.client.R;
-import org.mortar.client.data.LocationLogger;
+import org.mortar.client.services.GPSListenerService;
 import org.mortar.common.Utils;
 
 import android.annotation.SuppressLint;
@@ -44,7 +44,7 @@ public class ViewLogActivity extends ActionBarActivity {
 	 * http://code.google.com/p/osmtracker-android/issues/detail?id=15
 	 */
 	public final static int HDOP_APPROXIMATION_FACTOR = 4;
-	private LocationLogger logger;
+	private Logger logger;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

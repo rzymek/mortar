@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.mortar.client.GPSListenerService;
+import org.mortar.client.services.GPSListenerService;
 import org.mortar.common.MortarMessage;
 
 import android.content.Context;

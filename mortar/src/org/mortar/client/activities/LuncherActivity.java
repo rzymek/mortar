@@ -1,8 +1,8 @@
 package org.mortar.client.activities;
 
 import org.mortar.client.App;
-import org.mortar.client.GPSListenerService;
 import org.mortar.client.R;
+import org.mortar.client.services.GPSListenerService;
 import org.mortar.common.Utils;
 
 import android.app.Activity;

@@ -1,9 +1,9 @@
-package org.mortar.client;
+package org.mortar.client.services;
 
 import java.util.Date;
 
+import org.mortar.client.Logger;
 import org.mortar.client.data.GsmMessage;
-import org.mortar.client.data.LocationLogger;
 import org.mortar.common.MortarMessage;
 import org.mortar.common.Utils;
 
@@ -19,7 +19,7 @@ import com.google.gson.JsonParser;
 public class SMSReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		LocationLogger logger = new LocationLogger(context);
+		Logger logger = new Logger(context);
 		try {
 			if (intent.hasExtra("com.parse.Data")) {
 				onReceivePush(context, intent, logger);
@@ -33,7 +33,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		}
 	}
 
-	private void onReceivePush(Context context, Intent intent, LocationLogger logger) throws Exception {
+	private void onReceivePush(Context context, Intent intent, Logger logger) throws Exception {
 		final String pkg = "org.mortar.common.msg.";
 		String rawJson = intent.getExtras().getString("com.parse.Data");
 
@@ -49,7 +49,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		message.onReceive(context);
 	}
 
-	private void onReceiveSMS(Context context, Intent intent, LocationLogger logger) throws Exception {
+	private void onReceiveSMS(Context context, Intent intent, Logger logger) throws Exception {
 		Bundle extras = intent.getExtras();
 		GsmMessage sms = GsmMessage.createFromBundle(extras);
 		if (sms == null) {

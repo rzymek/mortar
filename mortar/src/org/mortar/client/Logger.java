@@ -1,4 +1,4 @@
-package org.mortar.client.data;
+package org.mortar.client;
 
 import java.util.Date;
 
@@ -13,13 +13,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.util.Log;
 
-public class LocationLogger extends SQLiteOpenHelper {
+public class Logger extends SQLiteOpenHelper {
 	private static final long MIN_INTERVAL = 5/* sec */* 1000L;
 	private static final float MIN_DISTANCE = 5/* m */;
 
 	private Location lastSavedLocation = null;
 
-	public LocationLogger(Context context) {
+	public Logger(Context context) {
 		super(context, "GpsLog", null, 7);
 	}
 

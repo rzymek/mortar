@@ -5,7 +5,8 @@ import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.mortar.client.activities.InfoActivity;
-import org.mortar.client.data.LocationLogger;
+import org.mortar.client.services.GPSListenerService;
+import org.mortar.common.Config;
 import org.mortar.common.Utils;
 import org.mortar.common.msg.Explosion;
 
@@ -23,13 +24,13 @@ public class App extends Application implements UncaughtExceptionHandler {
 
 	private Location currentBestLocation;
 	private Explosion explosion;
-	public LocationLogger logger;
+	public Logger logger;
 	public Config.Read config;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		logger = new LocationLogger(this);
+		logger = new Logger(this);
 		Parse.initialize(this, "zh0WoCJmlUEZcyUcfcfJxsV0LzlWogRxT9eskueX", "sUr8eVDrVmKbf3vgkfBQ15O6eRPfT2nPGnekLVP2");
 		config = new Config.Read(this);
 		setupParse();

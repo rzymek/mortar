@@ -1,4 +1,4 @@
-package org.mortar.client;
+package org.mortar.common;
 
 import android.content.Context;
 import android.content.SharedPreferences;

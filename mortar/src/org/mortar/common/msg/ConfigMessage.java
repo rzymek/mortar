@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mortar.client.App;
-import org.mortar.client.Config;
+import org.mortar.common.Config;
 import org.mortar.common.MortarMessage;
 import org.mortar.common.Utils;
 

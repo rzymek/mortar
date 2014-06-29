@@ -45,7 +45,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="org.mortar.client.GPSListenerService" />
+        <service android:name="org.mortar.client.services.GPSListenerService" />
 
         <activity
             android:name="org.mortar.client.activities.InfoActivity"
@@ -61,7 +61,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="org.mortar.client.SMSReceiver" android:exported="false">
+        <receiver android:name="org.mortar.client.services.SMSReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="org.mortar.client.MortarMessage" />
             </intent-filter>

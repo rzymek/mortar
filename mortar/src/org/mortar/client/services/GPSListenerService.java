@@ -1,4 +1,4 @@
-package org.mortar.client;
+package org.mortar.client.services;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
@@ -6,9 +6,14 @@ import static android.location.LocationManager.PASSIVE_PROVIDER;
 
 import java.util.Date;
 
+import org.mortar.client.App;
+import org.mortar.client.Logger;
+import org.mortar.client.R;
+import org.mortar.client.R.drawable;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.activities.ViewLogActivity;
-import org.mortar.client.data.LocationLogger;
+import org.mortar.client.utils.AbstractLocationListener;
+import org.mortar.client.utils.GPSUtils;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
 import org.mortar.common.SateliteListener;
@@ -65,7 +70,7 @@ public class GPSListenerService extends Service {
 	private SateliteListener sateliteListener;
 
 	private Handler handler;
-	private LocationLogger logger;
+	private Logger logger;
 
 	// ========================================================================================================
 
