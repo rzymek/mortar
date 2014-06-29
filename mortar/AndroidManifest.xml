@@ -63,7 +63,7 @@
 
         <receiver android:name="org.mortar.client.SMSReceiver" android:exported="false">
             <intent-filter>
-                <action android:name="org.mortar.client.UPDATE_STATUS" />
+                <action android:name="org.mortar.client.MortarMessage" />
             </intent-filter>
             <intent-filter>
              <action android:name="android.intent.action.DATA_SMS_RECEIVED" />

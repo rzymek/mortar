@@ -189,7 +189,6 @@ public class ServerActivity extends Activity {
 
 	private void broadcast(final MortarMessage message) {
 		try {
-			sendToSelf(message);
 			if (config.is(Config.SMS_SEND)) {
 				smsBroadcast(message);
 			}
@@ -221,8 +220,9 @@ public class ServerActivity extends Activity {
 		Gson gson = new Gson();
 		String json = gson.toJson(message);
 		JSONObject data = new JSONObject(json);
-		data.put("action", "org.mortar.client.UPDATE_STATUS");
-
+		data.put("action", "org.mortar.client.MortarMessage");
+		data.put("type", message.getClass().getSimpleName());
+		data.put("timestamp", new Date().getTime());
 		ParseQuery<ParseInstallation> query = ParseInstallation.getQuery();
 		query.whereEqualTo("channel", config.getString(Config.PUSH_CHANNEL));
 

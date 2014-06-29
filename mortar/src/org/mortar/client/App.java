@@ -109,11 +109,12 @@ public class App extends Application implements UncaughtExceptionHandler {
 
 	@Override
 	public void uncaughtException(Thread thread, Throwable ex) {
+		Log.e("APP", "unhandled", ex);
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		ex.printStackTrace(pw);
 		logger.log(sw.toString());
-		Utils. handle(ex, this);
+		Utils.handle(ex, this);
 	}
 
 }

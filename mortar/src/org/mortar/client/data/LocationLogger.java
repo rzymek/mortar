@@ -80,6 +80,7 @@ public class LocationLogger extends SQLiteOpenHelper {
 		values.put("msg", string);
 		values.put("timestamp", System.currentTimeMillis());
 		getWritableDatabase().insert("log", null, values);
+		Log.i("LOG", string);
 	}
 
 	public void reset() {
