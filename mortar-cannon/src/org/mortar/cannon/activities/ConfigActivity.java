@@ -1,4 +1,4 @@
-package org.mortar.server.activities;
+package org.mortar.cannon.activities;
 
 import org.mortar.common.App;
 import org.mortar.common.Config;

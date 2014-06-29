@@ -1,4 +1,4 @@
-package org.mortar.client.activities;
+package org.mortar.sensor.activities;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,11 +13,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.mortar.client.App;
-import org.mortar.client.Logger;
 import org.mortar.client.R;
-import org.mortar.client.services.GPSListenerService;
 import org.mortar.common.Utils;
+import org.mortar.sensor.App;
+import org.mortar.sensor.Logger;
+import org.mortar.sensor.services.GPSListenerService;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;

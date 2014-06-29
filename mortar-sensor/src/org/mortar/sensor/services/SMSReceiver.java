@@ -1,12 +1,12 @@
-package org.mortar.client.services;
+package org.mortar.sensor.services;
 
 import java.util.Date;
 
-import org.mortar.client.Logger;
-import org.mortar.client.msg.ReceivedMessage;
 import org.mortar.common.MessageSerializer;
 import org.mortar.common.Utils;
 import org.mortar.common.data.GsmMessage;
+import org.mortar.sensor.Logger;
+import org.mortar.sensor.msg.ReceivedMessage;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

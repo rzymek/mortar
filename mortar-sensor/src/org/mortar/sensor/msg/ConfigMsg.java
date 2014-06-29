@@ -1,8 +1,8 @@
-package org.mortar.client.msg;
+package org.mortar.sensor.msg;
 
-import org.mortar.client.App;
 import org.mortar.common.Config;
 import org.mortar.common.Utils;
+import org.mortar.sensor.App;
 
 import android.content.Context;
 import android.content.SharedPreferences;

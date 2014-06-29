@@ -1,4 +1,4 @@
-package org.mortar.client.msg;
+package org.mortar.sensor.msg;
 
 import android.content.Context;
 

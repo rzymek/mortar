@@ -1,4 +1,4 @@
-package org.mortar.server.activities;
+package org.mortar.cannon.activities;
 
 import java.io.IOException;
 import java.util.ArrayList;

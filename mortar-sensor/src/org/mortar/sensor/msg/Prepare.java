@@ -1,6 +1,6 @@
-package org.mortar.client.msg;
+package org.mortar.sensor.msg;
 
-import org.mortar.client.services.GPSListenerService;
+import org.mortar.sensor.services.GPSListenerService;
 
 import android.content.Context;
 import android.content.Intent;

@@ -1,9 +1,10 @@
-package org.mortar.client;
+package org.mortar.sensor;
 
-import org.mortar.client.activities.InfoActivity;
-import org.mortar.client.services.GPSListenerService;
+import org.mortar.client.R;
 import org.mortar.common.Utils;
 import org.mortar.common.msg.Explosion;
+import org.mortar.sensor.activities.InfoActivity;
+import org.mortar.sensor.services.GPSListenerService;
 
 import android.content.Intent;
 import android.location.Location;

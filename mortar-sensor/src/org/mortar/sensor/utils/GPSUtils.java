@@ -1,4 +1,4 @@
-package org.mortar.client.utils;
+package org.mortar.sensor.utils;
 
 import android.location.Location;
 

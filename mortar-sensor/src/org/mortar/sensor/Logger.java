@@ -1,4 +1,4 @@
-package org.mortar.client;
+package org.mortar.sensor;
 
 import java.util.Date;
 
