@@ -3,10 +3,10 @@ package org.mortar.client.services;
 import java.util.Date;
 
 import org.mortar.client.Logger;
-import org.mortar.client.data.GsmMessage;
 import org.mortar.client.msg.ReceivedMessage;
 import org.mortar.common.MessageSerializer;
 import org.mortar.common.Utils;
+import org.mortar.common.data.GsmMessage;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

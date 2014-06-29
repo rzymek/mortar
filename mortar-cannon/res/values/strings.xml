@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="app_name">MortarCannon</string>
     <string name="action_settings">Settings</string>
-    <string name="app_name">0Mortar Sensor</string>
-    <string name="title_activity_info">Mortar Hit</string>
-    <string name="title_activity_view_log">Mortal Log</string>
+    <string name="title_activity_server">0Mortar Cannon</string>
+    <string name="title_activity_number_list">Targets numbers</string>
     <string name="reset">Reset</string>
     <string name="save">Save</string>
     <string name="send_config">Send config</string>
@@ -14,11 +13,11 @@
     <string name="export">Export</string>
     <string name="epicenter">Epicentrum</string>
     <string name="current_location">Target here</string>
-    <string name="shutdown">Shutdown</string>
+    <string name="shutdown">Shutdown</string> 
     <string name="app_started">Mortar started</string>
     <string name="reset_log">Reset log?</string>
     <string name="title_activity_push_callback">PushCallbackActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="push">Push</string>
-
+    
 </resources>

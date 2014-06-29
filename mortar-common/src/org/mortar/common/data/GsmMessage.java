@@ -1,4 +1,4 @@
-package org.mortar.client.data;
+package org.mortar.common.data;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

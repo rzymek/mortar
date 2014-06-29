@@ -1,5 +1,7 @@
 package org.mortar.common;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 
 import android.annotation.SuppressLint;
@@ -38,4 +40,10 @@ public class Utils {
 				android.os.Build.MODEL, android.os.Build.PRODUCT, android.os.Build.HARDWARE);
 	}
 
+	public static String getStackString(Throwable ex) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		ex.printStackTrace(pw);
+		return sw.toString();
+	}
 }

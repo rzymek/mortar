@@ -1,7 +1,7 @@
-package org.mortar.server;
+package org.mortar.server.activities;
 
-import org.mortar.client.App;
-import org.mortar.client.R;
+import org.mortar.common.App;
+import org.mortar.server.R;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;

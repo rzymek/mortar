@@ -1,46 +1,26 @@
 package org.mortar.client;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
-
 import org.mortar.client.activities.InfoActivity;
 import org.mortar.client.services.GPSListenerService;
-import org.mortar.common.Config;
 import org.mortar.common.Utils;
 import org.mortar.common.msg.Explosion;
 
-import android.app.Application;
 import android.content.Intent;
 import android.location.Location;
 import android.util.Log;
 
-import com.parse.Parse;
-import com.parse.ParseInstallation;
-
-public class App extends Application implements UncaughtExceptionHandler {
+public class App extends org.mortar.common.App {
 	private static final long CURRENT_LOCATION_TIMEOUT = 7 * 60 * 1000;
 	private static final int HIGH_ALERT_ON_EXPLOSION_SEC = 3 * 60;
 
 	private Location currentBestLocation;
 	private Explosion explosion;
 	public Logger logger;
-	public Config.Read config;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		logger = new Logger(this);
-		Parse.initialize(this, "zh0WoCJmlUEZcyUcfcfJxsV0LzlWogRxT9eskueX", "sUr8eVDrVmKbf3vgkfBQ15O6eRPfT2nPGnekLVP2");
-		config = new Config.Read(this);
-		setupParse();
-		Thread.setDefaultUncaughtExceptionHandler(this);
-	}
-
-	public void setupParse() {
-		ParseInstallation inst = ParseInstallation.getCurrentInstallation();
-		inst.put("channel", config.getString(Config.PUSH_CHANNEL));
-		inst.saveInBackground();
 	}
 
 	private void checkDistance() {
@@ -110,12 +90,8 @@ public class App extends Application implements UncaughtExceptionHandler {
 
 	@Override
 	public void uncaughtException(Thread thread, Throwable ex) {
-		Log.e("APP", "unhandled", ex);
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		ex.printStackTrace(pw);
-		logger.log(sw.toString());
-		Utils.handle(ex, this);
+		logger.log(Utils.getStackString(ex));
+		super.uncaughtException(thread, ex);
 	}
 
 }

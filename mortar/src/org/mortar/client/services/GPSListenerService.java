@@ -11,10 +11,10 @@ import org.mortar.client.Logger;
 import org.mortar.client.R;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.activities.ViewLogActivity;
-import org.mortar.client.utils.AbstractLocationListener;
 import org.mortar.client.utils.GPSUtils;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
+import org.mortar.common.AbstractLocationListener;
 import org.mortar.common.SateliteListener;
 import org.mortar.common.Utils;
 

@@ -4,23 +4,21 @@
     android:versionCode="6"
     android:versionName="1.0.6" >
 
-    <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="19" />
-
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!-- push: -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="19" />
 
     <permission
         android:name="org.mortar.client.permission.C2D_MESSAGE"
@@ -51,22 +49,15 @@
             android:name="org.mortar.client.activities.InfoActivity"
             android:label="@string/title_activity_info" >
         </activity>
-        <activity
-            android:name="org.mortar.server.ServerActivity"
-            android:label="@string/title_activity_server" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <receiver android:name="org.mortar.client.services.SMSReceiver" android:exported="false">
+        <receiver
+            android:name="org.mortar.client.services.SMSReceiver"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="org.mortar.client.MortarMessage" />
             </intent-filter>
             <intent-filter>
-             <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
+                <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
 
                 <data android:port="@integer/sms_port" />
                 <data android:scheme="sms" />
@@ -74,16 +65,8 @@
         </receiver>
 
         <activity
-            android:name="org.mortar.server.NumbersActivity"
-            android:label="@string/title_activity_number_list" >
-        </activity>
-        <activity
             android:name="org.mortar.client.activities.ViewLogActivity"
             android:label="@string/title_activity_view_log" >
-        </activity>
-        <activity
-            android:name="org.mortar.server.ConfigActivity"
-            android:label="Mortart Config" >
         </activity>
 
         <service android:name="com.parse.PushService" />

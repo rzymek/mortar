@@ -1,4 +1,4 @@
-package org.mortar.server;
+package org.mortar.server.activities;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,19 +11,19 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mortar.client.App;
-import org.mortar.client.R;
-import org.mortar.client.data.GsmMessage;
-import org.mortar.client.utils.AbstractLocationListener;
+import org.mortar.common.AbstractLocationListener;
+import org.mortar.common.App;
 import org.mortar.common.Config;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
 import org.mortar.common.MessageSerializer;
 import org.mortar.common.Utils;
+import org.mortar.common.data.GsmMessage;
 import org.mortar.common.msg.ConfigMsg;
 import org.mortar.common.msg.Explosion;
 import org.mortar.common.msg.MortarMessage;
 import org.mortar.common.msg.Prepare;
+import org.mortar.server.R;
 
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
