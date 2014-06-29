@@ -23,9 +23,4 @@
     <string name="hello_world">Hello world!</string>
     <string name="push">Push</string>
 
-    <string-array name="channels">
-        <item>sms</item>
-        <item>push</item>
-    </string-array>
-
 </resources>

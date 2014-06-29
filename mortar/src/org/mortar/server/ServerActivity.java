@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.mortar.client.AbstractLocationListener;
 import org.mortar.client.Config;
@@ -43,8 +44,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -54,9 +53,7 @@ public class ServerActivity extends Activity {
 	private static final int RC_SENT = 100;
 	private static final int RC_DELIVERY_REPORT = 101;
 	private static final int RC_TARGETS_UPDATED = 102;
-	private static final int CHANNEL_SMS = 0;
-	private static final int CHANNEL_PUSH = 1;
-	private static final long PUSH_TIMEOUT = 5*60*1000L;
+	private static final long PUSH_TIMEOUT = 5 * 60 * 1000L;
 
 	private List<String> clients;
 	public Map<String, String> clientStatus = new HashMap<>();
@@ -69,7 +66,6 @@ public class ServerActivity extends Activity {
 	private TextView warrningDiameterText;
 
 	private LocationManager gps;
-	private Spinner channelSpinner;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +78,6 @@ public class ServerActivity extends Activity {
 		northingText = (TextView) findViewById(R.id.northingText);
 		killZoneDiameterText = (TextView) findViewById(R.id.killZoneDiameterText);
 		warrningDiameterText = (TextView) findViewById(R.id.warrningDiameterText);
-		channelSpinner = (Spinner) findViewById(R.id.server_spinner_channel);
-
-		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.channels,
-				android.R.layout.simple_spinner_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		channelSpinner.setAdapter(adapter);
 
 		findViewById(R.id.server_btn_fire).setOnClickListener(new OnClickListener() {
 			@Override
@@ -193,36 +183,43 @@ public class ServerActivity extends Activity {
 
 	private void broadcast(final MortarMessage message) {
 		try {
-			int selectedChannel = channelSpinner.getSelectedItemPosition();
-			if (selectedChannel == CHANNEL_SMS) {
+			Config.Read config = new Config.Read(this);
+			if (config.is(Config.SMS_SEND)) {
 				sendToSelf(message);
-				final byte[] userData = message.serialize();
-				final SmsManager smsManager = SmsManager.getDefault();
-				for (String phone : clients) {
-					clientStatus.put(phone, "sending");
-					updateStatus();
-					Intent data = new Intent();
-					data.putExtra("number", phone);
-					PendingIntent sent = createPendingResult(RC_SENT, data, PendingIntent.FLAG_UPDATE_CURRENT);
-					PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data,
-							PendingIntent.FLAG_UPDATE_CURRENT);
-					short smsPort = (short) R.integer.sms_port;
-					smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
-				}
-			} else if (selectedChannel == CHANNEL_PUSH) {
-				Gson gson = new Gson();
-				String json = gson.toJson(message);
-				ParsePush push = new ParsePush();
-				push.setChannel("mortar");
-				JSONObject data = new JSONObject(json);
-				data.put("action", "org.mortar.client.UPDATE_STATUS");
-				push.setData(data);
-				push.setExpirationTimeInterval(PUSH_TIMEOUT);
-				push.sendInBackground();
+				smsBroadcast(message);
 			}
+			pushBroadcast(message);
 		} catch (Exception ex) {
 			Utils.handle(ex, this);
 		}
+	}
+
+	protected void smsBroadcast(final MortarMessage message) throws IOException {
+		final byte[] userData = message.serialize();
+		final SmsManager smsManager = SmsManager.getDefault();
+		for (String phone : clients) {
+			clientStatus.put(phone, "sending");
+			updateStatus();
+			Intent data = new Intent();
+			data.putExtra("number", phone);
+			PendingIntent sent = createPendingResult(RC_SENT, data, PendingIntent.FLAG_UPDATE_CURRENT);
+			PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data,
+					PendingIntent.FLAG_UPDATE_CURRENT);
+			short smsPort = (short) R.integer.sms_port;
+			smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
+		}
+	}
+
+	protected void pushBroadcast(final MortarMessage message) throws JSONException {
+		Gson gson = new Gson();
+		String json = gson.toJson(message);
+		ParsePush push = new ParsePush();
+		push.setChannel("mortar");
+		JSONObject data = new JSONObject(json);
+		data.put("action", "org.mortar.client.UPDATE_STATUS");
+		push.setData(data);
+		push.setExpirationTimeInterval(PUSH_TIMEOUT);
+		push.sendInBackground();
 	}
 
 	private void sendToSelf(final MortarMessage message) throws IOException {

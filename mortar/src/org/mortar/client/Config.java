@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 
 public enum Config {
 	//@formatter:off
+	SMS_SEND(false),
 	HIGH_ALERT_SEC(5*60);
 	//@formatter:on
 

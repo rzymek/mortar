@@ -54,13 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
-	
-            
-            <Spinner 
-                android:id="@+id/server_spinner_channel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                />
+
             <Button
                 android:id="@+id/server_btn_prepare"
                 android:layout_width="wrap_content"
