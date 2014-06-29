@@ -9,7 +9,6 @@ import java.util.Date;
 import org.mortar.client.App;
 import org.mortar.client.Logger;
 import org.mortar.client.R;
-import org.mortar.client.R.drawable;
 import org.mortar.client.activities.LuncherActivity;
 import org.mortar.client.activities.ViewLogActivity;
 import org.mortar.client.utils.AbstractLocationListener;
