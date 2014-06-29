@@ -19,7 +19,6 @@ import org.mortar.common.SateliteListener;
 import org.mortar.common.Utils;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -162,9 +161,6 @@ public class GPSListenerService extends Service {
 		sateliteListener = new SateliteListener(gps) {
 			@Override
 			protected void onSatelitesChanged(int used, int max) {
-				String title = currentState.name();
-				String msg = " " + used + "/" + max;
-				updateNotification(title, msg);
 				logger.log("sat: "+used + "/" + max);
 			}
 		};
@@ -247,7 +243,6 @@ public class GPSListenerService extends Service {
 			break;
 		}
 		this.currentState = requested;
-		updateNotification(currentState.name(), null);
 	}
 
 	// ========================================================================================================
@@ -298,20 +293,11 @@ public class GPSListenerService extends Service {
 		gps.removeGpsStatusListener(sateliteListener);
 		gps.removeUpdates(otherProvidersListener);
 		unregisterScreenListener();
-		NotificationManager notifications = (NotificationManager) GPSListenerService.this.getSystemService(NOTIFICATION_SERVICE);
-		notifications.cancelAll();
-		notifications.cancel(NOTIFIFACTION_ID);
 		stopForeground(true);
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return (null);
-	}
-
-	private void updateNotification(String title, String msg) {
-		NotificationManager notifications = (NotificationManager) GPSListenerService.this.getSystemService(NOTIFICATION_SERVICE);
-		Notification notification = createNotification(title, msg);
-		notifications.notify(NOTIFIFACTION_ID, notification);
 	}
 }
