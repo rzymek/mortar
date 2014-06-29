@@ -51,10 +51,7 @@ public class ViewLogActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
 		setContentView(R.layout.activity_view_log);
-
-		if (savedInstanceState == null) {
-			logger = ((App) getApplication()).logger;
-		}
+		logger = ((App) getApplication()).logger;
 	}
 
 	@Override

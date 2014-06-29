@@ -50,7 +50,7 @@ public class App extends Application implements UncaughtExceptionHandler {
 		if (!isCurrentLocationValid()) {
 			return;
 		}
-		float distance = currentBestLocation.distanceTo(explosion.location);
+		float distance = currentBestLocation.distanceTo(explosion.getLocation());
 		logger.log(String.format("distance: %.0f", distance));
 		Log.i("APP", "distance: " + distance);
 		if (distance < explosion.killZoneDiameter) {
@@ -76,9 +76,9 @@ public class App extends Application implements UncaughtExceptionHandler {
 	public boolean isCurrentLocationValid() {
 		if (currentBestLocation == null)
 			return false;
-		if (explosion == null || explosion.location == null)
+		if (explosion == null || explosion.getLocation() == null)
 			return true;
-		long timeSpan = Math.abs(currentBestLocation.getTime() - explosion.location.getTime());
+		long timeSpan = Math.abs(currentBestLocation.getTime() - explosion.getLocation().getTime());
 		boolean isValid = timeSpan > CURRENT_LOCATION_TIMEOUT;
 		Log.i("APP", "timeSpan: " + timeSpan / 1000.0 + "sec - " + (isValid ? "valid" : "obsolete"));
 		return isValid;

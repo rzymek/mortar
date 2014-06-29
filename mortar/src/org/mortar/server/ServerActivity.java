@@ -246,7 +246,7 @@ public class ServerActivity extends Activity {
 
 	private Explosion createFireMessage() {
 		final Explosion message = new Explosion();
-		message.location = getAttackLocation();
+		message.setLocation(getAttackLocation());
 		message.killZoneDiameter = Short.parseShort(killZoneDiameterText.getText().toString());
 		message.warrningDiameter = Short.parseShort(warrningDiameterText.getText().toString());
 		return message;

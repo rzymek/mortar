@@ -11,7 +11,8 @@ import android.content.Context;
 import android.location.Location;
 
 public class Explosion extends MortarMessage {
-	public Location location;
+	private float latitude;
+	private float longitude;
 	public short killZoneDiameter;
 	public short warrningDiameter;
 	
@@ -23,18 +24,29 @@ public class Explosion extends MortarMessage {
 	
 	@Override
 	protected void serialize(DataOutputStream out) throws IOException {
-		out.writeFloat((float) location.getLatitude());
-		out.writeFloat((float) location.getLongitude());
+		out.writeFloat(latitude);
+		out.writeFloat(longitude);
 		out.writeShort(killZoneDiameter);
 		out.writeShort(warrningDiameter);
 	}
 	@Override
 	protected void deserialize(DataInputStream in) throws IOException {
-		location = new Location("Message");
-		location.setLatitude(in.readFloat());
-		location.setLongitude(in.readFloat());
+		latitude = in.readFloat();
+		longitude = in.readFloat();
 		killZoneDiameter = in.readShort();
 		warrningDiameter = in.readShort();
+	}
+
+	public Location getLocation() {		
+		Location location = new Location("msg");
+		location.setLatitude(latitude);
+		location.setLongitude(longitude);
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		latitude = (float) location.getLatitude();
+		longitude = (float) location.getLongitude();
 	}
 	
 	
