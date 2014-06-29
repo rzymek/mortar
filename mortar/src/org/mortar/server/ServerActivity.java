@@ -12,6 +12,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mortar.client.AbstractLocationListener;
+import org.mortar.client.App;
 import org.mortar.client.Config;
 import org.mortar.client.R;
 import org.mortar.client.data.GsmMessage;
@@ -47,7 +48,9 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.parse.ParseInstallation;
 import com.parse.ParsePush;
+import com.parse.ParseQuery;
 
 public class ServerActivity extends Activity {
 	private static final int RC_SENT = 100;
@@ -66,12 +69,15 @@ public class ServerActivity extends Activity {
 	private TextView warrningDiameterText;
 
 	private LocationManager gps;
+	private Config.Read config;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
 		setContentView(R.layout.activity_server);
 
+		config = new Config.Read(this);
 		statusView = (TextView) findViewById(R.id.server_view_status);
 		utmZoneText = (TextView) findViewById(R.id.utmZoneText);
 		eastingText = (TextView) findViewById(R.id.eastingText);
@@ -183,12 +189,13 @@ public class ServerActivity extends Activity {
 
 	private void broadcast(final MortarMessage message) {
 		try {
-			Config.Read config = new Config.Read(this);
+			sendToSelf(message);
 			if (config.is(Config.SMS_SEND)) {
-				sendToSelf(message);
 				smsBroadcast(message);
 			}
-			pushBroadcast(message);
+			if(config.is(Config.PUSH_NOTIFIACTIONS)) {
+				pushBroadcast(message);
+			}
 		} catch (Exception ex) {
 			Utils.handle(ex, this);
 		}
@@ -213,12 +220,16 @@ public class ServerActivity extends Activity {
 	protected void pushBroadcast(final MortarMessage message) throws JSONException {
 		Gson gson = new Gson();
 		String json = gson.toJson(message);
-		ParsePush push = new ParsePush();
-		push.setChannel("mortar");
 		JSONObject data = new JSONObject(json);
 		data.put("action", "org.mortar.client.UPDATE_STATUS");
+
+		ParseQuery<ParseInstallation> query = ParseInstallation.getQuery();
+		query.whereEqualTo("channel", config.getString(Config.PUSH_CHANNEL));
+
+		ParsePush push = new ParsePush();
 		push.setData(data);
 		push.setExpirationTimeInterval(PUSH_TIMEOUT);
+		push.setQuery(query);
 		push.sendInBackground();
 	}
 

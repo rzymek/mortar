@@ -1,5 +1,6 @@
 package org.mortar.server;
 
+import org.mortar.client.App;
 import org.mortar.client.R;
 
 import android.content.SharedPreferences;
@@ -18,6 +19,7 @@ public class NumbersActivity extends ActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
 		setContentView(R.layout.activity_number_list);
 		SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
 		numbersText = (TextView) findViewById(R.id.numbersText);

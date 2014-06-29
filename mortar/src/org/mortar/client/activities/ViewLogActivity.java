@@ -49,6 +49,7 @@ public class ViewLogActivity extends ActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
 		setContentView(R.layout.activity_view_log);
 
 		if (savedInstanceState == null) {

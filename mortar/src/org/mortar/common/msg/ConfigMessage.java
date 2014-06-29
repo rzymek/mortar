@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.mortar.client.App;
 import org.mortar.client.Config;
 import org.mortar.common.MortarMessage;
 import org.mortar.common.Utils;
@@ -28,6 +29,8 @@ public class ConfigMessage extends MortarMessage {
 				values.put(key, reader.get(key));
 			} else if (key.type.equals(Boolean.class)) {
 				values.put(key, reader.is(key));
+			} else if (key.type.equals(String.class)) {
+				values.put(key, reader.getString(key));
 			} else {
 				throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
 			}
@@ -44,11 +47,14 @@ public class ConfigMessage extends MortarMessage {
 					edit.putInt(key.name(), (int) values.get(key));
 				} else if (key.type.equals(Boolean.class)) {
 					edit.putBoolean(key.name(), (boolean) values.get(key));
+				} else if (key.type.equals(String.class)) {
+					edit.putString(key.name(), (String) values.get(key));
 				} else {
 					throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
 				}
 			}
 			edit.commit();
+			((App)context).setupParse();
 			Utils.toast("Config received", context);
 		} catch (Exception ex) {
 			Utils.handle(ex, context);
@@ -63,6 +69,8 @@ public class ConfigMessage extends MortarMessage {
 				out.writeInt((int) values.get(key));
 			} else if (key.type.equals(Boolean.class)) {
 				out.writeBoolean((boolean) values.get(key));
+			} else if (key.type.equals(String.class)) {
+				out.writeUTF((String) values.get(key));
 			} else {
 				throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
 			}
@@ -77,6 +85,8 @@ public class ConfigMessage extends MortarMessage {
 				values.put(key, in.readInt());
 			} else if (key.type.equals(Boolean.class)) {
 				values.put(key, in.readBoolean());
+			} else if (key.type.equals(String.class)) {
+				values.put(key, in.readUTF());
 			} else {
 				throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
 			}

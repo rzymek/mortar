@@ -1,7 +1,12 @@
 package org.mortar.client;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
+
 import org.mortar.client.activities.InfoActivity;
 import org.mortar.client.data.LocationLogger;
+import org.mortar.common.Utils;
 import org.mortar.common.msg.Explosion;
 
 import android.app.Application;
@@ -12,22 +17,29 @@ import android.util.Log;
 import com.parse.Parse;
 import com.parse.ParseInstallation;
 
-public class App extends Application {
+public class App extends Application implements UncaughtExceptionHandler {
 	private static final long CURRENT_LOCATION_TIMEOUT = 7 * 60 * 1000;
 	private static final int HIGH_ALERT_ON_EXPLOSION_SEC = 3 * 60;
 
 	private Location currentBestLocation;
 	private Explosion explosion;
 	public LocationLogger logger;
+	public Config.Read config;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		logger = new LocationLogger(this);
 		Parse.initialize(this, "zh0WoCJmlUEZcyUcfcfJxsV0LzlWogRxT9eskueX", "sUr8eVDrVmKbf3vgkfBQ15O6eRPfT2nPGnekLVP2");
-		ParseInstallation.getCurrentInstallation().saveInBackground();
-//		PushService.setDefaultPushCallback(this, PushCallbackActivity.class);
-//		PushService.subscribe(this, "mortar", PushCallbackActivity.class);
+		config = new Config.Read(this);
+		setupParse();
+		Thread.setDefaultUncaughtExceptionHandler(this);
+	}
+
+	public void setupParse() {
+		ParseInstallation inst = ParseInstallation.getCurrentInstallation();
+		inst.put("channel", config.getString(Config.PUSH_CHANNEL));
+		inst.saveInBackground();
 	}
 
 	private void checkDistance() {
@@ -93,6 +105,15 @@ public class App extends Application {
 		intent.putExtra(GPSListenerService.EXTRA_HIGH_ALERT, HIGH_ALERT_ON_EXPLOSION_SEC);
 		startService(intent);
 		checkDistance();
+	}
+
+	@Override
+	public void uncaughtException(Thread thread, Throwable ex) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		ex.printStackTrace(pw);
+		logger.log(sw.toString());
+		Utils. handle(ex, this);
 	}
 
 }

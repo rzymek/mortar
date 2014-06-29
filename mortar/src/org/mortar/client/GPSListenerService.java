@@ -138,6 +138,7 @@ public class GPSListenerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
 		logger = ((App)getApplication()).logger;
 		gps = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		gps.addGpsStatusListener(sateliteListener);

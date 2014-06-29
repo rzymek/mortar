@@ -17,7 +17,7 @@ public class Utils {
 		}
 	}
 
-	public static void handle(Exception ex, Context context) {
+	public static void handle(Throwable ex, Context context) {
 		Log.e("!!!", "error", ex);
 		Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
 	}

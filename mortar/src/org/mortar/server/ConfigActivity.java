@@ -1,5 +1,6 @@
 package org.mortar.server;
 
+import org.mortar.client.App;
 import org.mortar.client.Config;
 import org.mortar.client.Config.Read;
 import org.mortar.client.R;
@@ -27,6 +28,7 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
 		PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(this);
 		config = new Config.Read(this);
 		for (final Config key : Config.values()) {
@@ -72,6 +74,10 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 			item.getEditText().setInputType(EditorInfo.TYPE_CLASS_NUMBER);
 			item.setSummary("" + config.get(key));
 			return item;
+		} else if (key.type.equals(String.class)) {
+			EditTextPreference item = new EditTextPreference(this);
+			item.setSummary("" + config.getString(key));
+			return item;
 		} else {
 			throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
 		}
@@ -83,6 +89,8 @@ public class ConfigActivity extends PreferenceActivity implements OnSharedPrefer
 		Preference pref = findPreference(keyName);
 		if (key.type.equals(Integer.class)) {
 			pref.setSummary("" + config.get(key));
+		} else if (key.type.equals(String.class)) {
+			pref.setSummary("" + config.getString(key));
 		} else if (key.type.equals(Boolean.class)) {
 			CheckBoxPreference check = (CheckBoxPreference) pref;
 			boolean val = config.is(key);

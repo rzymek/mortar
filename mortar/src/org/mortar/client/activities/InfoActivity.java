@@ -1,5 +1,6 @@
 package org.mortar.client.activities;
 
+import org.mortar.client.App;
 import org.mortar.client.R;
 
 import android.app.Activity;
@@ -26,6 +27,7 @@ public class InfoActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
 		setContentView(R.layout.activity_info);
 		final TextView infoText = (TextView) findViewById(R.id.infoText);
 		final Intent intent = getIntent();
