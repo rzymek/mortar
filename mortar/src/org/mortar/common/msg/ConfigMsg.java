@@ -6,23 +6,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mortar.client.App;
 import org.mortar.common.Config;
-import org.mortar.common.MortarMessage;
-import org.mortar.common.Utils;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.preference.PreferenceManager;
 
-public class ConfigMessage extends MortarMessage {
-	private Map<Config, Object> values = new HashMap<>();
+public class ConfigMsg implements MortarMessage {
+	protected Map<Config, Object> values = new HashMap<>();
 
-	public ConfigMessage() {
+	public ConfigMsg() {
 	}
 
-	public ConfigMessage(Context ctx) {
+	public ConfigMsg(Context ctx) {
 		Config.Read reader = new Config.Read(ctx);
 		for (Config key : Config.values()) {
 			if (key.type.equals(Integer.class)) {
@@ -37,33 +31,9 @@ public class ConfigMessage extends MortarMessage {
 		}
 	}
 
-	@Override
-	public void onReceive(Context context) {
-		try {
-			SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-			Editor edit = shared.edit();
-			for (Config key : Config.values()) {
-				if (key.type.equals(Integer.class)) {
-					edit.putInt(key.name(), (int) values.get(key));
-				} else if (key.type.equals(Boolean.class)) {
-					edit.putBoolean(key.name(), (boolean) values.get(key));
-				} else if (key.type.equals(String.class)) {
-					edit.putString(key.name(), (String) values.get(key));
-				} else {
-					throw new IllegalArgumentException("Unsupported type:" + key.type + " for " + key);
-				}
-			}
-			edit.commit();
-			((App)context).setupParse();
-			Utils.toast("Config received", context);
-		} catch (Exception ex) {
-			Utils.handle(ex, context);
-		}
-
-	}
 
 	@Override
-	protected void serialize(DataOutputStream out) throws IOException {
+	public void serialize(DataOutputStream out) throws IOException {
 		for (Config key : Config.values()) {
 			if (key.type.equals(Integer.class)) {
 				out.writeInt((int) values.get(key));
@@ -79,7 +49,7 @@ public class ConfigMessage extends MortarMessage {
 	}
 
 	@Override
-	protected void deserialize(DataInputStream in) throws IOException {
+	public void deserialize(DataInputStream in) throws IOException {
 		for (Config key : Config.values()) {
 			if (key.type.equals(Integer.class)) {
 				values.put(key, in.readInt());

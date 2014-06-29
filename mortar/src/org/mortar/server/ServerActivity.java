@@ -18,10 +18,11 @@ import org.mortar.client.utils.AbstractLocationListener;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
 import org.mortar.common.Config;
-import org.mortar.common.MortarMessage;
+import org.mortar.common.MessageSerializer;
 import org.mortar.common.Utils;
-import org.mortar.common.msg.ConfigMessage;
+import org.mortar.common.msg.ConfigMsg;
 import org.mortar.common.msg.Explosion;
+import org.mortar.common.msg.MortarMessage;
 import org.mortar.common.msg.Prepare;
 
 import android.app.Activity;
@@ -71,10 +72,12 @@ public class ServerActivity extends Activity {
 	private LocationManager gps;
 	private Config.Read config;
 
+	private MessageSerializer serializer = new MessageSerializer(MortarMessage.class.getPackage().getName());
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
+		Thread.setDefaultUncaughtExceptionHandler((App) getApplication());
 		setContentView(R.layout.activity_server);
 
 		config = new Config.Read(this);
@@ -148,33 +151,33 @@ public class ServerActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
-			case RC_SENT:
-			case RC_DELIVERY_REPORT: {
-				String number = data.getStringExtra("number");
-				String msg = (requestCode == RC_SENT ? "sent" : "delivered");
-				clientStatus.put(number, msg + "(" + resultCodeDesc(resultCode) + ")");
-				updateStatus();
-				break;
-			}
-			case RC_TARGETS_UPDATED:
-				clients = loadClientNumbers();
-				updateStatus();
-				break;
+		case RC_SENT:
+		case RC_DELIVERY_REPORT: {
+			String number = data.getStringExtra("number");
+			String msg = (requestCode == RC_SENT ? "sent" : "delivered");
+			clientStatus.put(number, msg + "(" + resultCodeDesc(resultCode) + ")");
+			updateStatus();
+			break;
+		}
+		case RC_TARGETS_UPDATED:
+			clients = loadClientNumbers();
+			updateStatus();
+			break;
 		}
 	}
 
 	private String resultCodeDesc(int resultCode) {
 		switch (resultCode) {
-			case RESULT_OK:
-				return "OK";
-			case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-				return "GENERIC_FAILURE";
-			case SmsManager.RESULT_ERROR_NO_SERVICE:
-				return "NO_SERVICE";
-			case SmsManager.RESULT_ERROR_NULL_PDU:
-				return "NULL_PDU";
-			case SmsManager.RESULT_ERROR_RADIO_OFF:
-				return "RADIO_OFF";
+		case RESULT_OK:
+			return "OK";
+		case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+			return "GENERIC_FAILURE";
+		case SmsManager.RESULT_ERROR_NO_SERVICE:
+			return "NO_SERVICE";
+		case SmsManager.RESULT_ERROR_NULL_PDU:
+			return "NULL_PDU";
+		case SmsManager.RESULT_ERROR_RADIO_OFF:
+			return "RADIO_OFF";
 		}
 		return "" + resultCode;
 	}
@@ -192,7 +195,7 @@ public class ServerActivity extends Activity {
 			if (config.is(Config.SMS_SEND)) {
 				smsBroadcast(message);
 			}
-			if(config.is(Config.PUSH_NOTIFIACTIONS)) {
+			if (config.is(Config.PUSH_NOTIFIACTIONS)) {
 				pushBroadcast(message);
 			}
 		} catch (Exception ex) {
@@ -201,7 +204,7 @@ public class ServerActivity extends Activity {
 	}
 
 	protected void smsBroadcast(final MortarMessage message) throws IOException {
-		final byte[] userData = message.serialize();
+		final byte[] userData = serializer.serialize(message);
 		final SmsManager smsManager = SmsManager.getDefault();
 		for (String phone : clients) {
 			clientStatus.put(phone, "sending");
@@ -209,8 +212,7 @@ public class ServerActivity extends Activity {
 			Intent data = new Intent();
 			data.putExtra("number", phone);
 			PendingIntent sent = createPendingResult(RC_SENT, data, PendingIntent.FLAG_UPDATE_CURRENT);
-			PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data,
-					PendingIntent.FLAG_UPDATE_CURRENT);
+			PendingIntent delivered = createPendingResult(RC_DELIVERY_REPORT, data, PendingIntent.FLAG_UPDATE_CURRENT);
 			short smsPort = (short) R.integer.sms_port;
 			smsManager.sendDataMessage(phone, null, smsPort, userData, sent, delivered);
 		}
@@ -237,7 +239,7 @@ public class ServerActivity extends Activity {
 		Intent intent = new Intent("android.intent.action.DATA_SMS_RECEIVED");
 		intent.setData(Uri.parse("sms://0:" + R.integer.sms_port));
 		GsmMessage msg = new GsmMessage();
-		msg.contents = message.serialize();
+		msg.contents = serializer.serialize(message);
 		msg.from = "local";
 		msg.timestamp = new Date().getTime();
 		intent.putExtra("mortar", msg);
@@ -294,28 +296,27 @@ public class ServerActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
 		switch (id) {
-			case R.id.menu_server_config:
-				startActivity(new Intent(this, ConfigActivity.class));
-				return true;
-			case R.id.menu_server_send_config:
-				broadcast(new ConfigMessage(this));
-				return true;
-			case R.id.menu_server_current_location: {
-				gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, currentLocation);
-				gps.addGpsStatusListener(satelitelistener);
-				progressDialog = ProgressDialog.show(this, "GPS", "Acquiring location", false, true,
-						new OnCancelListener() {
-							@Override
-							public void onCancel(DialogInterface dialog) {
-								stopGps();
-							}
-						});
-				progressDialog.setMax(5);
-				return true;
-			}
-			case R.id.menu_server_numbers:
-				startActivityForResult(new Intent(this, NumbersActivity.class), RC_TARGETS_UPDATED);
-				return true;
+		case R.id.menu_server_config:
+			startActivity(new Intent(this, ConfigActivity.class));
+			return true;
+		case R.id.menu_server_send_config:
+			broadcast(new ConfigMsg(this));
+			return true;
+		case R.id.menu_server_current_location: {
+			gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, currentLocation);
+			gps.addGpsStatusListener(satelitelistener);
+			progressDialog = ProgressDialog.show(this, "GPS", "Acquiring location", false, true, new OnCancelListener() {
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					stopGps();
+				}
+			});
+			progressDialog.setMax(5);
+			return true;
+		}
+		case R.id.menu_server_numbers:
+			startActivityForResult(new Intent(this, NumbersActivity.class), RC_TARGETS_UPDATED);
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}

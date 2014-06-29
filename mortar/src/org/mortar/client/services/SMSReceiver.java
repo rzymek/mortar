@@ -4,7 +4,8 @@ import java.util.Date;
 
 import org.mortar.client.Logger;
 import org.mortar.client.data.GsmMessage;
-import org.mortar.common.MortarMessage;
+import org.mortar.client.msg.ReceivedMessage;
+import org.mortar.common.MessageSerializer;
 import org.mortar.common.Utils;
 
 import android.content.BroadcastReceiver;
@@ -17,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 public class SMSReceiver extends BroadcastReceiver {
+	private MessageSerializer serializer = new MessageSerializer(ReceivedMessage.class.getPackage().getName());
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Logger logger = new Logger(context);
@@ -34,16 +36,16 @@ public class SMSReceiver extends BroadcastReceiver {
 	}
 
 	private void onReceivePush(Context context, Intent intent, Logger logger) throws Exception {
-		final String pkg = "org.mortar.common.msg.";
+		final String pkg = ReceivedMessage.class.getPackage().getName();
 		String rawJson = intent.getExtras().getString("com.parse.Data");
 
 		Gson gson = new Gson();
 		JsonParser parser = new JsonParser();
-		
+
 		JsonElement json = parser.parse(rawJson);
 		String type = json.getAsJsonObject().get("type").getAsString();
-		Class<?> target = Class.forName(pkg + type);
-		MortarMessage message = (MortarMessage) gson.fromJson(json, target);
+		Class<?> target = Class.forName(pkg + '.' + type);
+		ReceivedMessage message = (ReceivedMessage) gson.fromJson(json, target);
 		String msg = message.getClass().getSimpleName() + ":" + intent.getExtras();
 		logger.log("push: " + msg);
 		message.onReceive(context);
@@ -55,7 +57,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		if (sms == null) {
 			sms = (GsmMessage) extras.getSerializable("mortar");
 		}
-		MortarMessage message = MortarMessage.deserialize(sms.contents);
+		ReceivedMessage message = (ReceivedMessage) serializer.deserialize(sms.contents);
 		String msg = message.getClass().getSimpleName() + " from " + sms.from + " (" + new Date(sms.timestamp) + ")";
 		logger.log("sms: " + msg);
 		message.onReceive(context);
