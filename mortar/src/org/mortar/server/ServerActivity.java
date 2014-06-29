@@ -56,6 +56,7 @@ public class ServerActivity extends Activity {
 	private static final int RC_TARGETS_UPDATED = 102;
 	private static final int CHANNEL_SMS = 0;
 	private static final int CHANNEL_PUSH = 1;
+	private static final long PUSH_TIMEOUT = 5*60*1000L;
 
 	private List<String> clients;
 	public Map<String, String> clientStatus = new HashMap<>();
@@ -216,6 +217,7 @@ public class ServerActivity extends Activity {
 				JSONObject data = new JSONObject(json);
 				data.put("action", "org.mortar.client.UPDATE_STATUS");
 				push.setData(data);
+				push.setExpirationTimeInterval(PUSH_TIMEOUT);
 				push.sendInBackground();
 			}
 		} catch (Exception ex) {
