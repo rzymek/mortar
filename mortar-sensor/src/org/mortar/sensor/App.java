@@ -5,11 +5,15 @@ import java.util.Date;
 import org.mortar.common.Utils;
 import org.mortar.common.msg.Explosion;
 import org.mortar.sensor.activities.InfoActivity;
+import org.mortar.sensor.activities.ViewLogActivity;
 import org.mortar.sensor.services.GPSListenerService;
 
 import android.content.Intent;
 import android.location.Location;
 import android.util.Log;
+
+import com.parse.Parse;
+import com.parse.PushService;
 
 public class App extends org.mortar.common.App {
 	private static final long CURRENT_LOCATION_TIMEOUT = 7 * 60 * 1000;
@@ -22,6 +26,10 @@ public class App extends org.mortar.common.App {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		Parse.setLogLevel(Parse.LOG_LEVEL_DEBUG);
+		PushService.setDefaultPushCallback(this, ViewLogActivity.class);
+
+		Log.w("X","hello2");
 		logger = new Logger(this);
 	}
 

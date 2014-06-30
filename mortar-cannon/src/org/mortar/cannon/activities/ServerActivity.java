@@ -249,7 +249,7 @@ public class ServerActivity extends ActionBarActivity {
 		Gson gson = new Gson();
 		String json = gson.toJson(message);
 		JSONObject data = new JSONObject(json);
-		data.put("action", "org.mortar.client.MortarMessage");
+		data.put("action", getString(R.string.action));
 		data.put("type", message.getClass().getSimpleName());
 		data.put("timestamp", new Date().getTime());
 		ParseQuery<ParseInstallation> query = ParseInstallation.getQuery();

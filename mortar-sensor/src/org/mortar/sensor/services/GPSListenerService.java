@@ -28,6 +28,7 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -87,17 +88,32 @@ public class GPSListenerService extends Service {
 				logger.put(location);
 			}
 		}
+
 		@Override
 		public void onProviderEnabled(String provider) {
-			logger.log(provider+" ON");
+			logger.log(provider + " ON");
 		}
+
 		@Override
 		public void onProviderDisabled(String provider) {
-			logger.log(provider+" off");
+			logger.log(provider + " off");
 		}
+
 		@Override
 		public void onStatusChanged(String provider, int status, Bundle extras) {
-			logger.log(provider+" status="+status+": "+extras);
+			logger.log(provider + " status=" + getStatusString(status) + "; " + Utils.toString(extras));
+		}
+
+		private String getStatusString(int status) {
+			switch (status) {
+			case LocationProvider.AVAILABLE:
+				return "AVAILABLE";
+			case LocationProvider.OUT_OF_SERVICE:
+				return "OUT_OF_SERVICE";
+			case LocationProvider.TEMPORARILY_UNAVAILABLE:
+				return "TEMPORARILY_UNAVAILABLE";
+			}
+			return "UNKNOWN_" + status;
 		}
 	};
 
@@ -106,17 +122,20 @@ public class GPSListenerService extends Service {
 		public void onLocationChanged(Location location) {
 			gpsListener.onLocationChanged(location);
 		}
+
 		@Override
 		public void onProviderEnabled(String provider) {
-			logger.log(provider+" ON");
+			logger.log(provider + " ON");
 		}
+
 		@Override
 		public void onProviderDisabled(String provider) {
-			logger.log(provider+" off");
+			logger.log(provider + " off");
 		}
+
 		@Override
 		public void onStatusChanged(String provider, int status, Bundle extras) {
-			logger.log(provider+" status="+status+": "+extras);
+			logger.log(provider + " status=" + status + ": " + extras);
 		}
 	};
 
@@ -141,8 +160,8 @@ public class GPSListenerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
-		logger = ((App)getApplication()).logger;
+		Thread.setDefaultUncaughtExceptionHandler((App) getApplication());
+		logger = ((App) getApplication()).logger;
 		gps = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		gps.addGpsStatusListener(sateliteListener);
 
@@ -161,11 +180,11 @@ public class GPSListenerService extends Service {
 		sateliteListener = new SateliteListener(gps) {
 			@Override
 			protected void onSatelitesChanged(int used, int max) {
-				logger.log("sat: "+used + "/" + max);
+				logger.log("sat: " + used + "/" + max);
 			}
 		};
 		reload();
-		logger.log("listener created\n"+Utils.getSystemInfo());
+		logger.log("listener created\n" + Utils.getSystemInfo());
 	}
 
 	@Override

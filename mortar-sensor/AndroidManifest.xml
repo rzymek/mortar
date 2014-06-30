@@ -16,12 +16,12 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="org.mortar.client.permission.C2D_MESSAGE" />
 
     <permission
-        android:name="org.mortar.client.permission.C2D_MESSAGE"
+        android:name="org.mortar.sensor.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
-
+    <uses-permission android:name="org.mortar.sensor.permission.C2D_MESSAGE" />
+    
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="19" />
@@ -34,7 +34,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="org.mortar.sensor.activities.LuncherActivity"
-            android:label="@string/app_name"            
+            android:label="@string/app_name"
             android:theme="@style/Theme.Transparent" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,26 +49,27 @@
             android:name="org.mortar.sensor.activities.InfoActivity"
             android:label="@string/title_activity_info" >
         </activity>
-
+        <activity
+            android:name="org.mortar.sensor.activities.ViewLogActivity"
+            android:label="@string/title_activity_view_log" >
+        </activity>
         <receiver
             android:name="org.mortar.sensor.services.SMSReceiver"
             android:exported="false" >
             <intent-filter>
-                <action android:name="org.mortar.client.MortarMessage" />
+                <!-- can't be @string/action. must be inline -->
+                <action android:name="org.mortar.sensor.MortarMessage" />
             </intent-filter>
+            <!-- 
             <intent-filter>
                 <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
 
                 <data android:port="@integer/sms_port" />
                 <data android:scheme="sms" />
             </intent-filter>
+             -->
         </receiver>
-
-        <activity
-            android:name="org.mortar.sensor.activities.ViewLogActivity"
-            android:label="@string/title_activity_view_log" >
-        </activity>
-
+        
         <service android:name="com.parse.PushService" />
 
         <receiver android:name="com.parse.ParseBroadcastReceiver" >
@@ -84,7 +85,7 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
 
-                <category android:name="org.mortar.client" />
+                <category android:name="org.mortar.sensor" />
             </intent-filter>
         </receiver>
     </application>

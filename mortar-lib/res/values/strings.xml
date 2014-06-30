@@ -1,5 +1,5 @@
 <resources>
 
     <string name="app_name">Mortar Lib</string>
-
+	<string name="action">org.mortar.sensor.MortarMessage</string>
 </resources>

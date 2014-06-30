@@ -3,9 +3,11 @@ package org.mortar.common;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -45,5 +47,13 @@ public class Utils {
 		PrintWriter pw = new PrintWriter(sw);
 		ex.printStackTrace(pw);
 		return sw.toString();
+	}
+	public static String toString(Bundle bundle) {
+		StringBuilder buf = new StringBuilder();
+		Set<String> keys = bundle.keySet();
+		for (String key : keys) {
+			buf.append(key).append(":").append(bundle.get(key)).append(", ");
+		}
+		return buf.toString();
 	}
 }
