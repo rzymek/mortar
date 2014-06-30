@@ -26,10 +26,6 @@ public class App extends org.mortar.common.App {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Parse.setLogLevel(Parse.LOG_LEVEL_DEBUG);
-		PushService.setDefaultPushCallback(this, ViewLogActivity.class);
-
-		Log.w("X","hello2");
 		logger = new Logger(this);
 	}
 
