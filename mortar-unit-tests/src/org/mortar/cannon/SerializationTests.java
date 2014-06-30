@@ -4,9 +4,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
-
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mortar.common.MessageSerializer;
@@ -31,7 +28,7 @@ public class SerializationTests {
 			byte[] serialized = serializer.serialize(msg);			
 			int length = serialized.length;
 			System.out.println(msg.getClass().getSimpleName()+":"+length);
-			assertThat(length, lessThanOrEqualTo(PDU_SIZE));
+			assertThat("fits in one sms", length, lessThanOrEqualTo(PDU_SIZE));
 			assertThat(deserializer.deserialize(serialized), instanceOf(ReceivedMessage.class));			
 		}
 	}
