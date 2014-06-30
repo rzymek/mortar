@@ -46,7 +46,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		String type = json.getAsJsonObject().get("type").getAsString();
 		Class<?> target = Class.forName(pkg + '.' + type);
 		ReceivedMessage message = (ReceivedMessage) gson.fromJson(json, target);
-		String msg = message.getClass().getSimpleName() + ":" + intent.getExtras();
+		String msg = message.getClass().getSimpleName() + ":" + Utils.toString(intent.getExtras());
 		logger.log("push: " + msg);
 		message.onReceive(context);
 	}
