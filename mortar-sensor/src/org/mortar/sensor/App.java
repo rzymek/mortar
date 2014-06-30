@@ -1,5 +1,7 @@
 package org.mortar.sensor;
 
+import java.util.Date;
+
 import org.mortar.common.Utils;
 import org.mortar.common.msg.Explosion;
 import org.mortar.sensor.activities.InfoActivity;
@@ -60,8 +62,8 @@ public class App extends org.mortar.common.App {
 		if (explosion == null || explosion.getLocation() == null)
 			return true;
 		long timeSpan = Math.abs(currentBestLocation.getTime() - explosion.getLocation().getTime());
-		boolean isValid = timeSpan > CURRENT_LOCATION_TIMEOUT;
-		Log.i("APP", "timeSpan: " + timeSpan / 1000.0 + "sec - " + (isValid ? "valid" : "obsolete"));
+		boolean isValid = timeSpan < CURRENT_LOCATION_TIMEOUT;
+		logger.log("shelling timeSpan: " + timeSpan / 1000.0 + "sec - " + (isValid ? "valid" : "obsolete"));
 		return isValid;
 	}
 
@@ -92,6 +94,18 @@ public class App extends org.mortar.common.App {
 	public void uncaughtException(Thread thread, Throwable ex) {
 		logger.log(Utils.getStackString(ex));
 		super.uncaughtException(thread, ex);
+	}
+	
+	public void simulateHit() {
+		currentBestLocation = new Location("mock");
+		currentBestLocation.setLatitude(52);
+		currentBestLocation.setLongitude(23);
+		currentBestLocation.setTime(new Date().getTime());
+		explosion = new Explosion();
+		explosion.setLocation(currentBestLocation);
+		explosion.killZoneDiameter = 30;
+		explosion.warrningDiameter = 300;
+		checkDistance();
 	}
 
 }

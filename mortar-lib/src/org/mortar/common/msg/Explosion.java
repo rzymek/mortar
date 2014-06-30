@@ -9,8 +9,10 @@ import android.location.Location;
 public class Explosion implements MortarMessage {
 	private float latitude;
 	private float longitude;
+	private long timestamp;
 	public short killZoneDiameter;
 	public short warrningDiameter;
+	
 	
 	@Override
 	public void serialize(DataOutputStream out) throws IOException {
@@ -31,12 +33,14 @@ public class Explosion implements MortarMessage {
 		Location location = new Location("msg");
 		location.setLatitude(latitude);
 		location.setLongitude(longitude);
+		location.setTime(timestamp);
 		return location;
 	}
 
 	public void setLocation(Location location) {
 		latitude = (float) location.getLatitude();
 		longitude = (float) location.getLongitude();
+		timestamp = location.getTime();
 	}
 	
 	

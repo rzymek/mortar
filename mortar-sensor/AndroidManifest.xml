@@ -34,7 +34,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="org.mortar.sensor.activities.LuncherActivity"
-            android:label="@string/app_name"
+            android:label="@string/app_name"            
             android:theme="@style/Theme.Transparent" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

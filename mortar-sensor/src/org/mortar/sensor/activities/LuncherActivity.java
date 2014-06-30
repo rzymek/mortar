@@ -39,7 +39,7 @@ public class LuncherActivity extends Activity {
 				}
 			});
 			builder.create().show();
-		} else {
+		} else {			
 			startService(new Intent(this, GPSListenerService.class));
 			Utils.toast(getString(R.string.app_started), this);
 			finish();
