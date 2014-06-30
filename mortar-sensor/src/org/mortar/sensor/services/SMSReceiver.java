@@ -18,7 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 public class SMSReceiver extends BroadcastReceiver {
-	private MessageSerializer serializer = new MessageSerializer(ReceivedMessage.class.getPackage().getName());
+	private MessageSerializer serializer = new MessageSerializer(ReceivedMessage.class.getPackage());
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Logger logger = new Logger(context);

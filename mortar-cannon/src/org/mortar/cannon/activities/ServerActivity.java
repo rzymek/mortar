@@ -72,7 +72,7 @@ public class ServerActivity extends ActionBarActivity {
 	private LocationManager gps;
 	private Config.Read config;
 
-	private MessageSerializer serializer = new MessageSerializer(MortarMessage.class.getPackage().getName());
+	private MessageSerializer serializer = new MessageSerializer(MortarMessage.class.getPackage());
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

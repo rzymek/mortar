@@ -11,8 +11,8 @@ import org.mortar.common.msg.MortarMessage;
 public class MessageSerializer {
 	private String pkg;
 
-	public MessageSerializer(String pkg) {
-		this.pkg = pkg;
+	public MessageSerializer(Package pkg) {
+		this.pkg = pkg.getName();
 	}
 
 	public byte[] serialize(MortarMessage msg) throws IOException {
