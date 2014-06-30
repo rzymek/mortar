@@ -19,5 +19,6 @@
     <string name="title_activity_push_callback">PushCallbackActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="push">Push</string>
+    <string name="prepare">Prepare</string>
     
 </resources>

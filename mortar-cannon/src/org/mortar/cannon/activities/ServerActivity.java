@@ -1,12 +1,14 @@
 package org.mortar.cannon.activities;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -38,6 +40,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.telephony.SmsManager;
@@ -46,6 +49,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -73,6 +77,7 @@ public class ServerActivity extends ActionBarActivity {
 	private Config.Read config;
 
 	private MessageSerializer serializer = new MessageSerializer(MortarMessage.class.getPackage());
+	private CountDownTimer prepareCountDown;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -98,11 +103,32 @@ public class ServerActivity extends ActionBarActivity {
 				}
 			}
 		});
-		findViewById(R.id.server_btn_prepare).setOnClickListener(new OnClickListener() {
+		final Button prepareBtn = (Button) findViewById(R.id.server_btn_prepare);
+		prepareBtn.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View v) {
 				Config.Read cfg = new Config.Read(ServerActivity.this);
-				broadcast(new Prepare(cfg.get(Config.HIGH_ALERT_SEC)));
+				final int highAlertSec = cfg.get(Config.HIGH_ALERT_SEC);
+				broadcast(new Prepare(highAlertSec));
+				final String pattern = "mm:ss:S";
+				final SimpleDateFormat countdownFmt = new SimpleDateFormat(pattern, Locale.ENGLISH);
+				if(prepareCountDown != null) {
+					prepareCountDown.cancel();
+				}
+				prepareCountDown = new CountDownTimer(highAlertSec * 1000, 100) {
+
+					@Override
+					public void onTick(long millisUntilFinished) {
+						String text = countdownFmt.format(new Date(millisUntilFinished));
+						prepareBtn.setText(text.substring(0, pattern.length()));
+					}
+
+					@Override
+					public void onFinish() {
+						prepareBtn.setText(R.string.prepare);
+					}
+				}.start();
 			}
 		});
 		clients = loadClientNumbers();
