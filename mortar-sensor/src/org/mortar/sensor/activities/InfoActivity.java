@@ -1,7 +1,7 @@
 package org.mortar.sensor.activities;
 
-import org.mortar.client.R;
 import org.mortar.sensor.App;
+import org.mortar.sensor.R;
 
 import android.app.Activity;
 import android.content.Intent;

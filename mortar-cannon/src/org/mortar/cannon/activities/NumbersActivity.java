@@ -1,7 +1,7 @@
 package org.mortar.cannon.activities;
 
+import org.mortar.cannon.R;
 import org.mortar.common.App;
-import org.mortar.server.R;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;

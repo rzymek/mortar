@@ -13,20 +13,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.mortar.client.R;
 import org.mortar.common.Utils;
 import org.mortar.sensor.App;
 import org.mortar.sensor.Logger;
+import org.mortar.sensor.R;
 import org.mortar.sensor.services.GPSListenerService;
-
-import com.parse.Parse;
-import com.parse.ParseFile;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
@@ -40,6 +34,8 @@ import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+
+import com.parse.ParseObject;
 
 public class ViewLogActivity extends ActionBarActivity {
 	/**

@@ -1,6 +1,5 @@
 package org.mortar.sensor;
 
-import org.mortar.client.R;
 import org.mortar.common.Utils;
 import org.mortar.common.msg.Explosion;
 import org.mortar.sensor.activities.InfoActivity;

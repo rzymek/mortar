@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mortar.cannon.R;
 import org.mortar.common.AbstractLocationListener;
 import org.mortar.common.App;
 import org.mortar.common.Config;
@@ -25,7 +26,6 @@ import org.mortar.common.msg.ConfigMsg;
 import org.mortar.common.msg.Explosion;
 import org.mortar.common.msg.MortarMessage;
 import org.mortar.common.msg.Prepare;
-import org.mortar.server.R;
 
 import android.app.PendingIntent;
 import android.app.ProgressDialog;

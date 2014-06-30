@@ -6,14 +6,14 @@ import static android.location.LocationManager.PASSIVE_PROVIDER;
 
 import java.util.Date;
 
-import org.mortar.client.R;
+import org.mortar.common.AbstractLocationListener;
 import org.mortar.common.CoordinateConversion;
 import org.mortar.common.CoordinateConversion.UTM;
-import org.mortar.common.AbstractLocationListener;
 import org.mortar.common.SateliteListener;
 import org.mortar.common.Utils;
 import org.mortar.sensor.App;
 import org.mortar.sensor.Logger;
+import org.mortar.sensor.R;
 import org.mortar.sensor.activities.LuncherActivity;
 import org.mortar.sensor.activities.ViewLogActivity;
 import org.mortar.sensor.utils.GPSUtils;
