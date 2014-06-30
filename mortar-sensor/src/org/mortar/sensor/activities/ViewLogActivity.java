@@ -19,8 +19,14 @@ import org.mortar.sensor.App;
 import org.mortar.sensor.Logger;
 import org.mortar.sensor.services.GPSListenerService;
 
+import com.parse.Parse;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
@@ -30,6 +36,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -49,7 +56,7 @@ public class ViewLogActivity extends ActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Thread.setDefaultUncaughtExceptionHandler((App)getApplication());
+		Thread.setDefaultUncaughtExceptionHandler((App) getApplication());
 		setContentView(R.layout.activity_view_log);
 		logger = ((App) getApplication()).logger;
 	}
@@ -89,32 +96,32 @@ public class ViewLogActivity extends ActionBarActivity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		switch (id) {
-			case R.id.action_refresh:
-				onResume();
-				break;
-			case R.id.action_export:
-				export();
-				break;
-			case R.id.action_reset:
-				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle("Mortar");
-				builder.setMessage(R.string.reset_log);
-				builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
-					@Override
-					public void onClick(DialogInterface arg0, int arg1) {
-						logger.reset();
-						onResume();
-					}
-				});
-				builder.setNegativeButton(android.R.string.cancel, null);
-				builder.create().show();
-				break;
-			case R.id.menu_view_quit:
-				stopService(new Intent(this, GPSListenerService.class));
-				finish();
-				break;
-			default:
-				return super.onOptionsItemSelected(item);
+		case R.id.action_refresh:
+			onResume();
+			break;
+		case R.id.action_export:
+			export();
+			break;
+		case R.id.action_reset:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Mortar");
+			builder.setMessage(R.string.reset_log);
+			builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface arg0, int arg1) {
+					logger.reset();
+					onResume();
+				}
+			});
+			builder.setNegativeButton(android.R.string.cancel, null);
+			builder.create().show();
+			break;
+		case R.id.menu_view_quit:
+			stopService(new Intent(this, GPSListenerService.class));
+			finish();
+			break;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 		return true;
 	}
@@ -149,11 +156,16 @@ public class ViewLogActivity extends ActionBarActivity {
 				if (logs == null) {
 					return;
 				}
+				TelephonyManager telephony = (TelephonyManager) ViewLogActivity.this.getSystemService(TELEPHONY_SERVICE);
+				ParseObject parse = new ParseObject("logs");
+				parse.put("log", logs.log.toString());
+				parse.put("number", "" + telephony.getLine1Number());
+				parse.saveInBackground();
+//				Utils.toast("Logs uploaded", getApplicationContext());
+
 				Intent i = new Intent(Intent.ACTION_SEND);
 				i.setType("message/rfc822");
-				i.putExtra(Intent.EXTRA_EMAIL, new String[] {
-					"rzymek+mortar@gmail.com"
-				});
+				i.putExtra(Intent.EXTRA_EMAIL, new String[] { "rzymek+mortar@gmail.com" });
 				i.putExtra(Intent.EXTRA_SUBJECT, "mortar client log");
 				i.putExtra(Intent.EXTRA_TEXT, logs.log);
 				i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(logs.gpx));
@@ -210,8 +222,7 @@ public class ViewLogActivity extends ActionBarActivity {
 					String provider = cursor.getString(8);
 
 					String dateTime = dateTimeFmt.format(new Date(timestamp));
-					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing,
-							accuracy, sat, provider));
+					out.append(String.format(Locale.ENGLISH, trkpt, lat, lon, dateTime, altitude, speed, bearing, accuracy, sat, provider));
 				}
 				copyRawTemplateTo(R.raw.gpx_tail, out);
 			} finally {
