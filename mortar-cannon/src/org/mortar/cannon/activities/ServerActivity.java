@@ -111,17 +111,18 @@ public class ServerActivity extends ActionBarActivity {
 				Config.Read cfg = new Config.Read(ServerActivity.this);
 				final int highAlertSec = cfg.get(Config.HIGH_ALERT_SEC);
 				broadcast(new Prepare(highAlertSec));
-				final String pattern = "mm:ss:S";
+				final String pattern = "mm:ss";
 				final SimpleDateFormat countdownFmt = new SimpleDateFormat(pattern, Locale.ENGLISH);
-				if(prepareCountDown != null) {
+				if (prepareCountDown != null) {
 					prepareCountDown.cancel();
 				}
-				prepareCountDown = new CountDownTimer(highAlertSec * 1000, 100) {
+				prepareCountDown = new CountDownTimer(highAlertSec * 1000, 1000) {
 
 					@Override
 					public void onTick(long millisUntilFinished) {
-						String text = countdownFmt.format(new Date(millisUntilFinished));
-						prepareBtn.setText(text.substring(0, pattern.length()));
+						String elapsed = countdownFmt.format(new Date(millisUntilFinished));
+						String running = countdownFmt.format(new Date((highAlertSec * 1000) - millisUntilFinished));
+						prepareBtn.setText(elapsed+" / "+running);
 					}
 
 					@Override
